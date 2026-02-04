@@ -1,180 +1,370 @@
-// API Configuration
-// Change this to your backend URL when available
-const API_BASE_URL = 'https://faucial-elderly-lupita.ngrok-free.dev';
+/**
+ * TableTalk API Service
+ * Connects to the FastAPI backend for all operations
+ */
+
+// API Configuration - change this to your backend URL
+const API_BASE_URL = 'http://localhost:8000';
 
 // Set to true to use mock data when backend is unavailable
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false;
 
-// API Service for TableTalk
 class ApiService {
     constructor() {
         this.baseUrl = API_BASE_URL;
         this.useMock = USE_MOCK_DATA;
+        this.token = localStorage.getItem('authToken');
+    }
+
+    // Set auth token
+    setToken(token) {
+        this.token = token;
+        localStorage.setItem('authToken', token);
+    }
+
+    // Clear auth token (logout)
+    clearToken() {
+        this.token = null;
+        localStorage.removeItem('authToken');
+    }
+
+    // Get auth headers
+    getHeaders() {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        if (this.token) {
+            headers['Authorization'] = `Bearer ${this.token}`;
+        }
+        return headers;
     }
 
     // Helper method for making API requests
     async request(endpoint, options = {}) {
         const url = `${this.baseUrl}${endpoint}`;
 
-        const defaultOptions = {
-            headers: {
-                'Content-Type': 'application/json',
-                'ngrok-skip-browser-warning': 'true', // Skip ngrok warning page
-            },
+        const config = {
+            headers: this.getHeaders(),
+            ...options,
         };
-
-        const config = { ...defaultOptions, ...options };
 
         try {
             const response = await fetch(url, config);
 
+            // Handle 401 Unauthorized
+            if (response.status === 401) {
+                this.clearToken();
+                // Optionally redirect to login
+            }
+
             if (!response.ok) {
-                throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.detail || `API Error: ${response.status}`);
             }
 
             return await response.json();
         } catch (error) {
             console.error('API Request failed:', error);
+
+            // Fallback to mock data if backend is unavailable
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                console.log('Backend unavailable, using mock data');
+                this.useMock = true;
+            }
             throw error;
         }
     }
 
-    // Get restaurant recommendations from AI
-    async getRecommendations(userId, scenario, topN = 5) {
-        if (this.useMock) {
-            return this.getMockRecommendations(userId, scenario, topN);
-        }
+    // ==================== AUTHENTICATION ====================
 
-        return this.request('/recommend', {
+    async register(email, password, name, phone = null, role = 'customer') {
+        return this.request('/api/auth/register', {
             method: 'POST',
-            body: JSON.stringify({
-                user_id: userId,
-                scenario: scenario,
-                top_n: topN,
-            }),
+            body: JSON.stringify({ email, password, name, phone, role }),
         });
     }
 
-    // Mock data for development
-    getMockRecommendations(userId, scenario, topN) {
+    async login(email, password) {
+        const response = await this.request('/api/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password }),
+        });
+        if (response.access_token) {
+            this.setToken(response.access_token);
+        }
+        return response;
+    }
+
+    async getCurrentUser() {
+        return this.request('/api/auth/me');
+    }
+
+    logout() {
+        this.clearToken();
+    }
+
+    // ==================== RESTAURANTS ====================
+
+    async getRestaurants(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        const endpoint = `/api/restaurants${queryString ? `?${queryString}` : ''}`;
+        return this.request(endpoint);
+    }
+
+    async getRestaurantById(id) {
+        return this.request(`/api/restaurants/${id}`);
+    }
+
+    async getRestaurantMenu(restaurantId, category = null) {
+        let endpoint = `/api/restaurants/${restaurantId}/menu`;
+        if (category) {
+            endpoint += `?category=${category}`;
+        }
+        return this.request(endpoint);
+    }
+
+    async createMenuItem(restaurantId, itemData) {
+        return this.request(`/api/restaurants/${restaurantId}/menu`, {
+            method: 'POST',
+            body: JSON.stringify(itemData)
+        });
+    }
+
+    async updateMenuItem(itemId, itemData) {
+        return this.request(`/api/restaurants/menu/${itemId}`, {
+            method: 'PUT',
+            body: JSON.stringify(itemData)
+        });
+    }
+
+    async deleteMenuItem(itemId) {
+        return this.request(`/api/restaurants/menu/${itemId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // ==================== RESERVATIONS ====================
+
+    async getMyReservations(status = null) {
+        let endpoint = '/api/reservations';
+        if (status) {
+            endpoint += `?status=${status}`;
+        }
+        return this.request(endpoint);
+    }
+
+    async createReservation(data) {
+        return this.request('/api/reservations', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async getReservationById(id) {
+        return this.request(`/api/reservations/${id}`);
+    }
+
+    async updateReservation(id, data) {
+        return this.request(`/api/reservations/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async cancelReservation(id) {
+        return this.request(`/api/reservations/${id}`, {
+            method: 'DELETE',
+        });
+    }
+
+    // Staff endpoints
+    async getAllReservations(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return this.request(`/api/reservations/staff/all?${queryString}`);
+    }
+
+    async updateReservationStatus(id, status, tableNumber = null) {
+        let endpoint = `/api/reservations/staff/${id}/status?status=${status}`;
+        if (tableNumber) {
+            endpoint += `&table_number=${tableNumber}`;
+        }
+        return this.request(endpoint, { method: 'PUT' });
+    }
+
+    // ==================== CORPORATE EVENTS ====================
+
+    async getMyEvents() {
+        return this.request('/api/events');
+    }
+
+    async createEvent(data) {
+        return this.request('/api/events', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async getEventById(id) {
+        return this.request(`/api/events/${id}`);
+    }
+
+    async updateEvent(id, data) {
+        return this.request(`/api/events/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async deleteEvent(id) {
+        return this.request(`/api/events/${id}`, {
+            method: 'DELETE',
+        });
+    }
+
+    async addEventFlow(eventId, flowData) {
+        return this.request(`/api/events/${eventId}/flow`, {
+            method: 'POST',
+            body: JSON.stringify(flowData),
+        });
+    }
+
+    // ==================== AI FEATURES ====================
+
+    async getRecommendations(params) {
+        if (this.useMock) {
+            return this.getMockRecommendations(params);
+        }
+
+        try {
+            return await this.request('/api/ai/recommend/restaurants', {
+                method: 'POST',
+                body: JSON.stringify({
+                    user_role: params.user_role || 'customer',
+                    scenario: params.scenario || 'dinner',
+                    budget_level: params.budget_level || 3,
+                    cuisine_preference: params.cuisine_preference || null,
+                    guest_count: params.guest_count || null,
+                    top_n: params.top_n || 5,
+                }),
+            });
+        } catch (error) {
+            console.log('AI recommendation failed, using mock data');
+            return this.getMockRecommendations(params);
+        }
+    }
+
+    async getMenuRecommendations(params) {
+        return this.request('/api/ai/recommend/menu', {
+            method: 'POST',
+            body: JSON.stringify(params),
+        });
+    }
+
+    async optimizeEventFlow(params) {
+        return this.request('/api/ai/optimize/event', {
+            method: 'POST',
+            body: JSON.stringify(params),
+        });
+    }
+
+    async chatWithAssistant(message, conversationHistory = [], context = {}) {
+        try {
+            return await this.request('/api/ai/chat', {
+                method: 'POST',
+                body: JSON.stringify({
+                    message,
+                    conversation_history: conversationHistory,
+                    context,
+                }),
+            });
+        } catch (error) {
+            // Fallback response if AI is unavailable
+            return {
+                response: '抱歉，AI助手暂时不可用。请使用传统表单进行预订。',
+                action: null,
+                extracted_data: {},
+                quick_replies: ['使用表单预订'],
+            };
+        }
+    }
+
+    async getUserPreferences() {
+        return this.request('/api/ai/preferences');
+    }
+
+    async getAIStatus() {
+        return this.request('/api/ai/status');
+    }
+
+    // ==================== MOCK DATA ====================
+
+    getMockRecommendations(params) {
         const mockRestaurants = [
             {
                 id: 1,
-                name: "Golden Palace",
+                name: "Table Talk",
                 cuisine: "Chinese",
                 rating: 4.8,
                 price_level: 4,
                 score: 9.2,
-                reason: "Perfect for business dinners with private rooms available",
+                reason: "精选粤菜，适合商务宴请，包房服务",
                 image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800",
-                address: "123 Main Street, Central District",
-                phone: "+852 1234 5678"
+                address: "123 Canton Road, Tsim Sha Tsui",
             },
             {
                 id: 2,
-                name: "Sakura Garden",
+                name: "Sakura House",
                 cuisine: "Japanese",
                 rating: 4.7,
                 price_level: 3,
                 score: 8.9,
-                reason: "Excellent sushi and authentic Japanese atmosphere",
+                reason: "新鲜刺身，正宗日式氛围",
                 image: "https://images.unsplash.com/photo-1579027989536-b7b1f875659b?w=800",
-                address: "456 Harbor Road, Wan Chai",
-                phone: "+852 2345 6789"
+                address: "456 Nathan Road, Jordan",
             },
             {
                 id: 3,
-                name: "Trattoria Milano",
-                cuisine: "Italian",
-                rating: 4.6,
-                price_level: 3,
-                score: 8.7,
-                reason: "Romantic setting with handmade pasta",
-                image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800",
-                address: "789 Queen's Road, Sheung Wan",
-                phone: "+852 3456 7890"
-            },
-            {
-                id: 4,
-                name: "Le Petit Bistro",
+                name: "La Maison",
                 cuisine: "French",
                 rating: 4.9,
                 price_level: 5,
+                score: 8.7,
+                reason: "米其林星级法国料理，特殊场合首选",
+                image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800",
+                address: "789 Central Plaza",
+            },
+            {
+                id: 4,
+                name: "Mama Mia Trattoria",
+                cuisine: "Italian",
+                rating: 4.5,
+                price_level: 2,
                 score: 8.5,
-                reason: "Michelin-starred French cuisine for special occasions",
-                image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=800",
-                address: "321 Peak Road, The Peak",
-                phone: "+852 4567 8901"
+                reason: "家庭式意大利菜，手工意面",
+                image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800",
+                address: "321 Queen's Road, Wan Chai",
             },
             {
                 id: 5,
-                name: "Spice Route",
-                cuisine: "Indian",
-                rating: 4.5,
-                price_level: 2,
-                score: 8.3,
-                reason: "Best value with authentic North Indian flavors",
-                image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800",
-                address: "654 Nathan Road, Tsim Sha Tsui",
-                phone: "+852 5678 9012"
-            },
-            {
-                id: 6,
                 name: "Seoul Kitchen",
                 cuisine: "Korean",
                 rating: 4.6,
-                price_level: 2,
-                score: 8.1,
-                reason: "Great for group dinners with BBQ tables",
-                image: "https://images.unsplash.com/photo-1590301157890-4810ed352733?w=800",
-                address: "987 Hennessy Road, Causeway Bay",
-                phone: "+852 6789 0123"
-            },
-            {
-                id: 7,
-                name: "Thai Orchid",
-                cuisine: "Thai",
-                rating: 4.4,
-                price_level: 2,
-                score: 7.9,
-                reason: "Authentic Thai street food in elegant setting",
-                image: "https://images.unsplash.com/photo-1559314809-0d155014e29e?w=800",
-                address: "147 Des Voeux Road, Central",
-                phone: "+852 7890 1234"
-            },
-            {
-                id: 8,
-                name: "Maxim Palace",
-                cuisine: "Chinese (Dim Sum)",
-                rating: 4.7,
                 price_level: 3,
-                score: 9.0,
-                reason: "Ideal for corporate banquets and annual dinners",
-                image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=800",
-                address: "258 Canton Road, Tsim Sha Tsui",
-                phone: "+852 8901 2345"
-            }
+                score: 8.3,
+                reason: "正宗韩国烤肉，适合聚餐",
+                image: "https://images.unsplash.com/photo-1590301157890-4810ed352733?w=800",
+                address: "654 Kimberley Road, TST",
+            },
         ];
 
-        // Simulate API delay
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve({
-                    results: mockRestaurants.slice(0, topN)
+                    recommendations: mockRestaurants.slice(0, params.top_n || 5),
+                    total: mockRestaurants.length,
                 });
             }, 500);
         });
-    }
-
-    // Get restaurant details by ID
-    async getRestaurantById(id) {
-        if (this.useMock) {
-            const { results } = await this.getMockRecommendations(1, 'all', 10);
-            const restaurant = results.find(r => r.id === parseInt(id));
-            return restaurant || null;
-        }
-
-        return this.request(`/restaurant/${id}`);
     }
 }
 

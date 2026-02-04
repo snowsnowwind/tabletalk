@@ -2,10 +2,13 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Home, UtensilsCrossed, Calendar, PartyPopper, Menu, X, Phone, MapPin } from 'lucide-react'
 import { useState } from 'react'
+import StatusIndicator from './StatusIndicator'
+import ChatBot, { ChatFloatingButton } from './ChatBot'
 import './Layout.css'
 
 function Layout() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [chatOpen, setChatOpen] = useState(false)
     const location = useLocation()
 
     const navItems = [
@@ -23,10 +26,10 @@ function Layout() {
                     {/* Logo */}
                     <NavLink to="/" className="logo">
                         <div className="logo-icon">
-                            <span>MP</span>
+                            <span>TT</span>
                         </div>
                         <div className="logo-text-group">
-                            <span className="logo-text">Maxim Palace</span>
+                            <span className="logo-text">Table Talk</span>
                             <span className="logo-tagline">Fine Dining Since 1988</span>
                         </div>
                     </NavLink>
@@ -122,7 +125,7 @@ function Layout() {
                 <div className="container">
                     <div className="footer-grid">
                         <div className="footer-section">
-                            <h4>Maxim Palace</h4>
+                            <h4>Table Talk</h4>
                             <p className="footer-about">
                                 Experience the finest Cantonese cuisine in an elegant setting.
                                 Serving Hong Kong since 1988.
@@ -156,10 +159,16 @@ function Layout() {
                         </div>
                     </div>
                     <div className="footer-bottom">
-                        <p>&copy; 2024 Maxim Palace. All rights reserved.</p>
+                        <p>&copy; 2026 Table Talk. All rights reserved.</p>
                     </div>
                 </div>
             </footer>
+            {/* System Status Indicator - For Demo Purposes */}
+            <StatusIndicator />
+
+            {/* AI Chat Bot */}
+            <ChatFloatingButton onClick={() => setChatOpen(true)} />
+            <ChatBot isOpen={chatOpen} onClose={() => setChatOpen(false)} />
         </div>
     )
 }

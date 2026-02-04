@@ -6,6 +6,7 @@ import {
     ChefHat, Wine, Users, ArrowRight, Sparkles
 } from 'lucide-react'
 import ChatBot, { ChatFloatingButton } from '../components/ChatBot'
+import apiService from '../services/api'
 import './Home.css'
 
 function Home() {
@@ -45,9 +46,34 @@ function Home() {
         }
     ]
 
-    const handleReservationComplete = (reservation) => {
-        console.log('Reservation completed:', reservation)
-        // Here you would send to backend
+    const handleReservationComplete = async (reservation) => {
+        try {
+            // Ensure payload has restaurant_id
+            const payload = {
+                restaurant_id: 1,
+                ...reservation,
+                // Ensure field names match schema (guest_name vs name)
+                guest_name: reservation.name || reservation.guest_name,
+                guest_phone: reservation.phone || reservation.guest_phone,
+                guest_email: reservation.email || reservation.guest_email
+            }
+
+            // Fix guests number if it's string
+            if (typeof payload.guests === 'string') {
+                payload.guests = parseInt(payload.guests) || 2
+            }
+
+            console.log('Sending chat reservation:', payload)
+            await apiService.createReservation(payload)
+            // Show success message or just close chat?
+            // ChatBot usually handles its own success state UI, but we can alert briefly
+            // Or rely on ChatBot closing
+            setChatOpen(false)
+            alert("Reservation Confirmed! checks your email/SMS.")
+        } catch (error) {
+            console.error("Chat booking failed:", error)
+            alert("Booking failed: " + error.message)
+        }
     }
 
     return (
@@ -79,7 +105,7 @@ function Home() {
                             Cantonese Cuisine
                         </h1>
                         <p className="hero-subtitle">
-                            Nestled in the heart of Tsim Sha Tsui, Maxim Palace offers an unforgettable
+                            Nestled in the heart of Tsim Sha Tsui, Table Talk offers an unforgettable
                             dining journey through the finest traditions of Cantonese gastronomy.
                         </p>
                         <div className="hero-actions">
@@ -192,7 +218,7 @@ function Home() {
                                 A Legacy of <span className="text-gradient-gold">Flavors</span>
                             </h2>
                             <p>
-                                Since 1988, Maxim Palace has been serving Hong Kong's most discerning
+                                Since 1988, Table Talk has been serving Hong Kong's most discerning
                                 diners with authentic Cantonese cuisine. Our master chefs bring generations
                                 of culinary wisdom to every dish, from delicate dim sum to grand banquet fare.
                             </p>
@@ -223,7 +249,7 @@ function Home() {
                         viewport={{ once: true }}
                     >
                         <h2 className="heading-display heading-2">
-                            Why <span className="text-gradient-gold">Maxim Palace</span>
+                            Why <span className="text-gradient-gold">Table Talk</span>
                         </h2>
                     </motion.div>
 
@@ -298,7 +324,7 @@ function Home() {
                         viewport={{ once: true }}
                     >
                         <h2 className="heading-display heading-3">
-                            Ready to Experience Maxim Palace?
+                            Ready to Experience Table Talk?
                         </h2>
                         <p>
                             Book your table today and discover why we've been Hong Kong's

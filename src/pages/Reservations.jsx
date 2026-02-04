@@ -5,6 +5,7 @@ import {
     MessageSquare, Check, Sparkles, CreditCard
 } from 'lucide-react'
 import ChatBot from '../components/ChatBot'
+import apiService from '../services/api'
 import './Reservations.css'
 
 function Reservations() {
@@ -37,17 +38,56 @@ function Reservations() {
         setFormData(prev => ({ ...prev, [name]: value }))
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        // Here you would send to backend
-        console.log('Reservation:', formData)
-        setSubmitted(true)
+        try {
+            // Prepare payload
+            const payload = {
+                restaurant_id: 1, // Default to 1 (Table Talk)
+                date: new Date(formData.date).toISOString(),
+                time: formData.time,
+                guests: parseInt(formData.guests) || 2,
+                occasion: formData.occasion,
+                special_requests: formData.specialRequests,
+                guest_name: formData.name,
+                guest_phone: formData.phone,
+                guest_email: formData.email
+            }
+
+            console.log('Sending reservation:', payload)
+            await apiService.createReservation(payload)
+            setSubmitted(true)
+        } catch (error) {
+            console.error("Booking failed:", error)
+            alert("Booking failed: " + error.message)
+        }
     }
 
-    const handleReservationComplete = (reservation) => {
-        console.log('Chat reservation:', reservation)
-        setSubmitted(true)
-        setChatOpen(false)
+    const handleReservationComplete = async (reservation) => {
+        try {
+            // Ensure payload has restaurant_id and correct fields
+            const payload = {
+                restaurant_id: 1,
+                ...reservation,
+                // Ensure field names match schema (guest_name vs name)
+                guest_name: reservation.name || reservation.guest_name,
+                guest_phone: reservation.phone || reservation.guest_phone,
+                guest_email: reservation.email || reservation.guest_email
+            }
+
+            // Fix guests number if it's string
+            if (typeof payload.guests === 'string') {
+                payload.guests = parseInt(payload.guests) || 2
+            }
+
+            console.log('Sending chat reservation:', payload)
+            await apiService.createReservation(payload)
+            setSubmitted(true)
+            setChatOpen(false)
+        } catch (error) {
+            console.error("Chat booking failed:", error)
+            alert("Booking failed: " + error.message)
+        }
     }
 
     if (submitted) {
@@ -64,17 +104,17 @@ function Reservations() {
                         </div>
                         <h2>Reservation Confirmed!</h2>
                         <p>
-                            Thank you for your reservation at Maxim Palace.
+                            Thank you for your reservation at Table Talk.
                             You will receive a confirmation SMS and email shortly.
                         </p>
                         <div className="confirmation-details">
                             <div className="detail-item">
                                 <Calendar size={18} />
-                                <span>{formData.date || 'Selected date'}</span>
+                                <span className={!formData.date ? "text-gray-400" : ""}>{formData.date || 'Chat Booking'}</span>
                             </div>
                             <div className="detail-item">
                                 <Clock size={18} />
-                                <span>{formData.time || 'Selected time'}</span>
+                                <span className={!formData.time ? "text-gray-400" : ""}>{formData.time || 'Confirmed'}</span>
                             </div>
                             <div className="detail-item">
                                 <Users size={18} />
@@ -119,7 +159,7 @@ function Reservations() {
                         Book Your <span className="text-gradient-gold">Table</span>
                     </h1>
                     <p className="page-subtitle">
-                        Reserve your table at Maxim Palace.
+                        Reserve your table at Table Talk.
                         Book via our chat assistant or fill out the form below.
                     </p>
                 </motion.div>
@@ -339,7 +379,7 @@ function Reservations() {
                 >
                     <p>
                         Need help? Call us at <strong>+852 1234 5678</strong> or email
-                        <strong> reservations@maximpalace.com</strong>
+                        <strong> reservations@tabletalk.com</strong>
                     </p>
                 </motion.div>
             </div>

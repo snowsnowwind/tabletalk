@@ -1,14 +1,59 @@
-# TableTalk Frontend
+# TableTalk - AI Restaurant Reservation System
 
-AI-Powered Restaurant Reservation & Event Planning System
+A full-stack AI-driven restaurant reservation and event planning system built with React and FastAPI.
 
-## 🚀 Quick Start
+![TableTalk](https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&h=400&fit=crop)
+
+## Features
+
+- 🍽️ **Restaurant Discovery** - Browse and search restaurants
+- 📅 **Online Reservations** - Book tables with real-time availability
+- 🤖 **AI Chat Assistant** - Conversational booking experience
+- 🎉 **Corporate Events** - Plan and manage corporate dinners and banquets
+- 📊 **Staff Dashboard** - Manage reservations and view analytics
+- 🧠 **AI Recommendations** - Personalized restaurant and menu suggestions (powered by Gemini)
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | React + Vite, Framer Motion |
+| Backend | Python FastAPI |
+| Database | PostgreSQL |
+| AI | Google Gemini API |
+| Auth | JWT |
+
+## Project Structure
+
+```
+tabletalk/
+├── src/                    # React frontend
+│   ├── components/         # Reusable components
+│   ├── pages/              # Page components
+│   ├── services/           # API services
+│   └── styles/             # CSS styles
+│
+├── backend/                # FastAPI backend
+│   ├── app/
+│   │   ├── models/         # SQLAlchemy models
+│   │   ├── schemas/        # Pydantic schemas
+│   │   ├── routers/        # API routes
+│   │   ├── services/       # Business logic
+│   │   └── ai/             # AI services (Gemini)
+│   └── scripts/            # Utility scripts
+│
+└── README.md
+```
+
+## Quick Start
 
 ### Prerequisites
-- Node.js 18+ (Download from https://nodejs.org/)
-- npm or yarn
 
-### Installation
+- Node.js 18+
+- Python 3.10+
+- PostgreSQL 14+
+
+### 1. Frontend Setup
 
 ```bash
 # Install dependencies
@@ -18,138 +63,109 @@ npm install
 npm run dev
 ```
 
-The app will open at `http://localhost:3000`
+Frontend runs at: http://localhost:3000
 
-## 📁 Project Structure
+### 2. Backend Setup
 
-```
-tabletalk/
-├── public/
-│   └── favicon.svg
-├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── Layout.jsx       # Main layout with navigation
-│   │   ├── Layout.css
-│   │   ├── RestaurantCard.jsx
-│   │   └── RestaurantCard.css
-│   ├── pages/               # Page components
-│   │   ├── Home.jsx         # Landing page
-│   │   ├── Discover.jsx     # Swipe-based restaurant discovery
-│   │   ├── Recommendations.jsx  # AI recommendations grid
-│   │   ├── RestaurantDetail.jsx # Restaurant details & reservation
-│   │   ├── CorporateEvents.jsx  # Corporate event planning wizard
-│   │   └── Preferences.jsx  # User preferences dashboard
-│   ├── services/
-│   │   └── api.js           # API service layer
-│   ├── styles/
-│   │   └── index.css        # Global styles & design system
-│   ├── App.jsx              # Main app with routing
-│   └── main.jsx             # Entry point
-├── index.html
-├── package.json
-└── vite.config.js
+```bash
+# Navigate to backend
+cd backend
+
+# Create virtual environment
+python -m venv venv
+
+# Activate (Windows)
+.\venv\Scripts\activate
+
+# Activate (Mac/Linux)
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-## 🔌 Backend Integration
+### 3. Database Setup
 
-### API Configuration
+Create PostgreSQL database:
 
-Edit `src/services/api.js` to connect to your backend:
-
-```javascript
-// Change this to your backend URL
-const API_BASE_URL = 'https://your-backend-url.ngrok-free.dev';
-
-// Set to false when backend is available
-const USE_MOCK_DATA = false;
+```sql
+CREATE DATABASE tabletalk;
 ```
 
-### API Endpoints Used
+Update `backend/.env` with your database connection:
 
-The frontend expects these endpoints:
-
-#### POST /recommend
-Request:
-```json
-{
-  "user_id": 1,
-  "scenario": "dinner",
-  "top_n": 6
-}
+```env
+DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/tabletalk
+GEMINI_API_KEY=your-gemini-api-key  # Optional, for AI features
 ```
 
-Response:
-```json
-{
-  "results": [
-    {
-      "id": 1,
-      "name": "Restaurant Name",
-      "cuisine": "Italian",
-      "rating": 4.5,
-      "price_level": 3,
-      "score": 8.1,
-      "reason": "AI recommendation reason"
-    }
-  ]
-}
+Initialize database with sample data:
+
+```bash
+cd backend
+python scripts/init_db.py
 ```
 
-## 🎨 Features
+### 4. Start Backend
 
-### For Everyday Users
-- **Swipe Discovery** - Tinder-style restaurant discovery
-- **AI Recommendations** - Personalized suggestions by occasion
-- **Restaurant Details** - Full info with reservation form
-- **Preference Learning** - Cuisine, price, and ambiance preferences
-
-### For Corporate Clients
-- **Event Planning Wizard** - Step-by-step event setup
-- **Menu Selection** - AI-recommended menus by budget
-- **Event Flow Builder** - Drag-and-drop timeline
-- **PDF Export** - Generate event summaries
-
-## 🛠 Tech Stack
-
-- **React 18** - UI framework
-- **React Router 6** - Navigation
-- **Framer Motion** - Animations
-- **Lucide React** - Icons
-- **Vite** - Build tool
-
-## 📱 Responsive Design
-
-The app is fully responsive:
-- Mobile-first discovery experience
-- Desktop-optimized corporate tools
-- Tablet-friendly layouts
-
-## 🎭 Design System
-
-CSS variables for easy customization in `src/styles/index.css`:
-
-```css
-:root {
-  --primary-500: #8b5cf6;  /* Main purple */
-  --accent-400: #fbbf24;   /* Gold accent */
-  --success: #10b981;      /* Green */
-  --font-display: 'Playfair Display';
-  --font-body: 'Inter';
-}
+```bash
+cd backend
+uvicorn app.main:app --reload --port 8000
 ```
 
-## 📝 Next Steps
+Backend API runs at: http://localhost:8000
+API Docs: http://localhost:8000/docs
 
-1. Install Node.js if not already installed
-2. Run `npm install` to install dependencies
-3. Update API_BASE_URL in `src/services/api.js`
-4. Run `npm run dev` to start development
-5. Connect with your backend team
+## Test Accounts
 
-## 🤝 Integration Checklist
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@tabletalk.com | admin123 |
+| Corporate | corp@company.com | corp123 |
+| Customer | user@test.com | user123 |
 
-- [ ] Update API base URL
-- [ ] Set USE_MOCK_DATA to false
-- [ ] Test /recommend endpoint
-- [ ] Add authentication (if needed)
-- [ ] Configure CORS on backend
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Register user
+- `POST /api/auth/login` - Login
+- `GET /api/auth/me` - Current user
+
+### Restaurants
+- `GET /api/restaurants` - List restaurants
+- `GET /api/restaurants/{id}` - Restaurant details with menu
+
+### Reservations
+- `POST /api/reservations` - Create reservation
+- `GET /api/reservations` - User's reservations
+- `PUT /api/reservations/{id}` - Update reservation
+
+### AI Features
+- `POST /api/ai/recommend/restaurants` - Get AI recommendations
+- `POST /api/ai/chat` - Chat with booking assistant
+- `POST /api/ai/optimize/event` - Optimize event flow
+
+## Environment Variables
+
+### Backend (.env)
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/tabletalk
+SECRET_KEY=your-secret-key
+GEMINI_API_KEY=your-gemini-api-key
+```
+
+## Screenshots
+
+### Home Page
+Elegant landing page with restaurant information and booking CTA.
+
+### Reservations
+AI-powered chat assistant for conversational booking.
+
+### Staff Dashboard
+Manage reservations, view statistics, and handle bookings.
+
+## License
+
+MIT License

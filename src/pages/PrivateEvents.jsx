@@ -81,7 +81,7 @@ function PrivateEvents() {
                         </div>
                         <h2>Inquiry Submitted!</h2>
                         <p>
-                            Thank you for your interest in hosting your event at Maxim Palace.
+                            Thank you for your interest in hosting your event at Table Talk.
                             Our events team will contact you within 24 hours to discuss your requirements.
                         </p>
                         <div className="submission-info">

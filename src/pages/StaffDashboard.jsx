@@ -1,120 +1,80 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
     Calendar, Clock, Users, Search, Filter,
     Phone, Mail, Check, X, Edit, Eye,
     AlertCircle, TrendingUp, CalendarCheck, UserCheck
 } from 'lucide-react'
+import apiService from '../services/api'
 import './StaffDashboard.css'
 
 function StaffDashboard() {
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+    // Default to empty date to show ALL reservations initially
+    const [selectedDate, setSelectedDate] = useState('')
     const [filterStatus, setFilterStatus] = useState('all')
     const [searchQuery, setSearchQuery] = useState('')
+    const [reservations, setReservations] = useState([])
+    const [loading, setLoading] = useState(true)
 
-    // Mock reservation data
-    const [reservations, setReservations] = useState([
-        {
-            id: 1,
-            name: 'Michael Chen',
-            phone: '+852 9123 4567',
-            email: 'michael@example.com',
-            date: new Date().toISOString().split('T')[0],
-            time: '7:00 PM',
-            guests: 4,
-            status: 'confirmed',
-            table: 'A3',
-            occasion: 'Birthday',
-            specialRequests: 'Birthday cake arrangement',
-            deposit: 800,
-            createdAt: '2024-02-01 14:30'
-        },
-        {
-            id: 2,
-            name: 'Sarah Wong',
-            phone: '+852 9234 5678',
-            email: 'sarah@company.com',
-            date: new Date().toISOString().split('T')[0],
-            time: '7:30 PM',
-            guests: 6,
-            status: 'pending',
-            table: 'B2',
-            occasion: 'Business Dinner',
-            specialRequests: 'Private room if available',
-            deposit: 1200,
-            createdAt: '2024-02-02 09:15'
-        },
-        {
-            id: 3,
-            name: 'David Lee',
-            phone: '+852 9345 6789',
-            email: '',
-            date: new Date().toISOString().split('T')[0],
-            time: '8:00 PM',
-            guests: 2,
-            status: 'confirmed',
-            table: 'C5',
-            occasion: 'Date Night',
-            specialRequests: 'Window seat',
-            deposit: 0,
-            createdAt: '2024-02-02 11:45'
-        },
-        {
-            id: 4,
-            name: 'Emily Tan',
-            phone: '+852 9456 7890',
-            email: 'emily.tan@email.com',
-            date: new Date().toISOString().split('T')[0],
-            time: '6:30 PM',
-            guests: 8,
-            status: 'seated',
-            table: 'Private Room 1',
-            occasion: 'Anniversary',
-            specialRequests: 'Vegetarian options needed',
-            deposit: 1600,
-            createdAt: '2024-02-01 16:20'
-        },
-        {
-            id: 5,
-            name: 'James Liu',
-            phone: '+852 9567 8901',
-            email: '',
-            date: new Date().toISOString().split('T')[0],
-            time: '8:30 PM',
-            guests: 3,
-            status: 'cancelled',
-            table: '-',
-            occasion: 'Regular Dining',
-            specialRequests: '',
-            deposit: 0,
-            createdAt: '2024-02-02 10:00'
+    // ... (rest of filtering logic needs update too)
+
+    // Fetch reservations
+    useEffect(() => {
+        const fetchReservations = async () => {
+            try {
+                setLoading(true)
+                // Fetch all reservations for filtering locally, or pass parameters
+                // Using getAllReservations to get everything for now to handle simple filtering
+                const data = await apiService.getAllReservations()
+                setReservations(data)
+            } catch (error) {
+                console.error("Failed to fetch reservations:", error)
+            } finally {
+                setLoading(false)
+            }
         }
-    ])
+
+        fetchReservations()
+    }, []) // Refresh on mount. Could add polling interval.
 
     const stats = {
-        total: reservations.filter(r => r.date === selectedDate).length,
-        confirmed: reservations.filter(r => r.date === selectedDate && r.status === 'confirmed').length,
-        pending: reservations.filter(r => r.date === selectedDate && r.status === 'pending').length,
-        seated: reservations.filter(r => r.date === selectedDate && r.status === 'seated').length,
+        total: reservations.filter(r => r.date.startsWith(selectedDate)).length,
+        confirmed: reservations.filter(r => r.date.startsWith(selectedDate) && r.status === 'confirmed').length,
+        pending: reservations.filter(r => r.date.startsWith(selectedDate) && r.status === 'pending').length,
+        seated: reservations.filter(r => r.date.startsWith(selectedDate) && r.status === 'seated').length,
         totalGuests: reservations
-            .filter(r => r.date === selectedDate && r.status !== 'cancelled')
+            .filter(r => r.date.startsWith(selectedDate) && r.status !== 'cancelled')
             .reduce((sum, r) => sum + r.guests, 0)
     }
 
-    const updateStatus = (id, newStatus) => {
-        setReservations(prev =>
-            prev.map(r => r.id === id ? { ...r, status: newStatus } : r)
-        )
+    const updateStatus = async (id, newStatus) => {
+        try {
+            await apiService.updateReservationStatus(id, newStatus)
+            // Optimistic update
+            setReservations(prev =>
+                prev.map(r => r.id === id ? { ...r, status: newStatus } : r)
+            )
+        } catch (error) {
+            console.error("Failed to update status:", error)
+            alert("Failed to update status")
+        }
     }
 
     const filteredReservations = reservations
-        .filter(r => r.date === selectedDate)
+        .filter(r => {
+            if (!selectedDate) return true
+            // API returns ISO strings, compare YYYY-MM-DD
+            const resDate = r.date.split('T')[0]
+            return resDate === selectedDate
+        })
         .filter(r => filterStatus === 'all' || r.status === filterStatus)
-        .filter(r =>
-            searchQuery === '' ||
-            r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            r.phone.includes(searchQuery)
-        )
+        .filter(r => {
+            const name = r.name || r.guest_name || ''
+            const phone = r.phone || r.guest_phone || ''
+            return searchQuery === '' ||
+                name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                phone.includes(searchQuery)
+        })
         .sort((a, b) => a.time.localeCompare(b.time))
 
     const getStatusColor = (status) => {
@@ -253,10 +213,10 @@ function StaffDashboard() {
                                 </div>
 
                                 <div className="res-guest-info">
-                                    <h4>{res.name}</h4>
+                                    <h4>{res.name || res.guest_name || 'Guest'}</h4>
                                     <div className="res-contact">
-                                        <span><Phone size={12} /> {res.phone}</span>
-                                        {res.email && <span><Mail size={12} /> {res.email}</span>}
+                                        <span><Phone size={12} /> {res.phone || res.guest_phone}</span>
+                                        {(res.email || res.guest_email) && <span><Mail size={12} /> {res.email || res.guest_email}</span>}
                                     </div>
                                 </div>
 
@@ -264,7 +224,7 @@ function StaffDashboard() {
                                     <span className="res-guests">
                                         <Users size={14} /> {res.guests} guests
                                     </span>
-                                    <span className="res-table">Table: {res.table}</span>
+                                    <span className="res-table">Table: {res.table || res.table_number || 'Unassigned'}</span>
                                     {res.occasion && <span className="res-occasion">{res.occasion}</span>}
                                 </div>
 
