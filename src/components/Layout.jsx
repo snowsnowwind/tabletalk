@@ -1,106 +1,139 @@
-import { Outlet, NavLink, useLocation } from 'react-router-dom'
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Home, UtensilsCrossed, Calendar, PartyPopper, Menu, X, Phone, MapPin } from 'lucide-react'
+import { Menu, X, User, ShoppingCart, LogOut } from 'lucide-react'
 import { useState } from 'react'
 import StatusIndicator from './StatusIndicator'
 import ChatBot, { ChatFloatingButton } from './ChatBot'
+import apiService from '../services/api'
 import './Layout.css'
 
 function Layout() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [chatOpen, setChatOpen] = useState(false)
     const location = useLocation()
+    const navigate = useNavigate()
 
-    const navItems = [
-        { path: '/', icon: Home, label: 'Home' },
-        { path: '/menu', icon: UtensilsCrossed, label: 'Menu' },
-        { path: '/reservations', icon: Calendar, label: 'Reservations' },
-        { path: '/private-events', icon: PartyPopper, label: 'Private Events' },
-    ]
+    // Check if we're on a page that should hide footer
+    const hideFooter = ['/', '/login', '/register', '/guest-selection'].includes(location.pathname)
+
+    const handleExit = () => {
+        apiService.logout()
+        navigate('/')
+    }
 
     return (
         <div className="layout">
-            {/* Header Navigation */}
+            {/* Header Navigation - Figma Style */}
             <header className="header">
                 <div className="header-container">
-                    {/* Logo */}
-                    <NavLink to="/" className="logo">
-                        <div className="logo-icon">
-                            <span>TT</span>
-                        </div>
-                        <div className="logo-text-group">
-                            <span className="logo-text">Table Talk</span>
-                            <span className="logo-tagline">Fine Dining Since 1988</span>
-                        </div>
-                    </NavLink>
-
-                    {/* Desktop Navigation */}
-                    <nav className="nav-desktop">
-                        {navItems.map((item) => (
-                            <NavLink
-                                key={item.path}
-                                to={item.path}
-                                className={({ isActive }) =>
-                                    `nav-link ${isActive ? 'nav-link-active' : ''}`
-                                }
-                            >
-                                <item.icon size={18} />
-                                <span>{item.label}</span>
-                            </NavLink>
-                        ))}
-                    </nav>
-
-                    {/* CTA Button */}
-                    <div className="header-actions">
-                        <a href="tel:+85212345678" className="header-phone">
-                            <Phone size={16} />
-                            <span>+852 1234 5678</span>
-                        </a>
-                        <NavLink to="/reservations" className="btn btn-primary">
-                            Book a Table
-                        </NavLink>
-                    </div>
-
                     {/* Mobile Menu Toggle */}
                     <button
-                        className="mobile-menu-toggle"
+                        className="menu-toggle"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        aria-label="Toggle menu"
                     >
                         {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
+
+                    {/* Logo - Maxim's Script Style */}
+                    <NavLink to="/" className="logo">
+                        <span className="logo-text">Maxim's</span>
+                    </NavLink>
+
+                    {/* Right Side Actions */}
+                    <div className="header-actions">
+                        <NavLink to="/preferences" className="header-icon-btn" aria-label="Profile">
+                            <User size={22} />
+                        </NavLink>
+                        <button className="header-icon-btn" aria-label="Cart">
+                            <ShoppingCart size={22} />
+                        </button>
+                        <button className="exit-btn" onClick={handleExit}>
+                            Exit
+                        </button>
+                    </div>
                 </div>
 
-                {/* Mobile Navigation */}
+                {/* Mobile Navigation Drawer */}
                 <AnimatePresence>
                     {mobileMenuOpen && (
-                        <motion.nav
-                            className="nav-mobile"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            {navItems.map((item) => (
-                                <NavLink
-                                    key={item.path}
-                                    to={item.path}
-                                    className={({ isActive }) =>
-                                        `nav-link-mobile ${isActive ? 'nav-link-active' : ''}`
-                                    }
-                                    onClick={() => setMobileMenuOpen(false)}
-                                >
-                                    <item.icon size={20} />
-                                    <span>{item.label}</span>
-                                </NavLink>
-                            ))}
-                            <NavLink
-                                to="/reservations"
-                                className="btn btn-primary mobile-book-btn"
+                        <>
+                            <motion.div
+                                className="nav-overlay"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
                                 onClick={() => setMobileMenuOpen(false)}
+                            />
+                            <motion.nav
+                                className="nav-drawer"
+                                initial={{ x: '-100%' }}
+                                animate={{ x: 0 }}
+                                exit={{ x: '-100%' }}
+                                transition={{ type: 'tween', duration: 0.3 }}
                             >
-                                Book a Table
-                            </NavLink>
-                        </motion.nav>
+                                <div className="nav-drawer-header">
+                                    <span className="logo-text">Maxim's</span>
+                                    <button
+                                        className="nav-close-btn"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        <X size={24} />
+                                    </button>
+                                </div>
+                                <div className="nav-drawer-content">
+                                    <NavLink
+                                        to="/"
+                                        className="nav-drawer-item"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        Home
+                                    </NavLink>
+                                    <NavLink
+                                        to="/discover"
+                                        className="nav-drawer-item"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        Discover Restaurants
+                                    </NavLink>
+                                    <NavLink
+                                        to="/menu"
+                                        className="nav-drawer-item"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        Our Menu
+                                    </NavLink>
+                                    <NavLink
+                                        to="/reservations"
+                                        className="nav-drawer-item"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        My Reservations
+                                    </NavLink>
+                                    <NavLink
+                                        to="/corporate-events"
+                                        className="nav-drawer-item"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        Corporate Events
+                                    </NavLink>
+                                    <NavLink
+                                        to="/preferences"
+                                        className="nav-drawer-item"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        My Profile
+                                    </NavLink>
+                                    <NavLink
+                                        to="/admin/login"
+                                        className="nav-drawer-item"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        Staff Portal
+                                    </NavLink>
+                                </div>
+                            </motion.nav>
+                        </>
                     )}
                 </AnimatePresence>
             </header>
@@ -110,9 +143,9 @@ function Layout() {
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={location.pathname}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                     >
                         <Outlet />
@@ -120,50 +153,32 @@ function Layout() {
                 </AnimatePresence>
             </main>
 
-            {/* Footer */}
-            <footer className="footer">
-                <div className="container">
-                    <div className="footer-grid">
-                        <div className="footer-section">
-                            <h4>Table Talk</h4>
-                            <p className="footer-about">
-                                Experience the finest Cantonese cuisine in an elegant setting.
-                                Serving Hong Kong since 1988.
-                            </p>
+            {/* Footer - Only show on certain pages */}
+            {!hideFooter && (
+                <footer className="footer">
+                    <div className="container">
+                        <div className="footer-content">
+                            <div className="footer-brand">
+                                <span className="logo-text">Maxim's</span>
+                                <p className="footer-tagline">
+                                    Experience the finest Cantonese cuisine since 1988.
+                                </p>
+                            </div>
+                            <div className="footer-links">
+                                <NavLink to="/menu">Menu</NavLink>
+                                <NavLink to="/reservations">Reservations</NavLink>
+                                <NavLink to="/corporate-events">Events</NavLink>
+                                <NavLink to="/staff">Staff</NavLink>
+                            </div>
                         </div>
-                        <div className="footer-section">
-                            <h4>Hours</h4>
-                            <p>Monday - Friday: 11:30 AM - 10:30 PM</p>
-                            <p>Saturday - Sunday: 10:30 AM - 11:00 PM</p>
-                            <p>Dim Sum: 10:30 AM - 3:00 PM (Weekends)</p>
-                        </div>
-                        <div className="footer-section">
-                            <h4>Location</h4>
-                            <p className="footer-address">
-                                <MapPin size={16} />
-                                123 Canton Road, Tsim Sha Tsui, Hong Kong
-                            </p>
-                            <p className="footer-phone">
-                                <Phone size={16} />
-                                +852 1234 5678
-                            </p>
-                        </div>
-                        <div className="footer-section">
-                            <h4>Quick Links</h4>
-                            <nav className="footer-nav">
-                                <NavLink to="/menu">Our Menu</NavLink>
-                                <NavLink to="/reservations">Make a Reservation</NavLink>
-                                <NavLink to="/private-events">Private Events</NavLink>
-                                <NavLink to="/staff">Staff Portal</NavLink>
-                            </nav>
+                        <div className="footer-bottom">
+                            <p>&copy; 2026 Maxim's Palace. All rights reserved.</p>
                         </div>
                     </div>
-                    <div className="footer-bottom">
-                        <p>&copy; 2026 Table Talk. All rights reserved.</p>
-                    </div>
-                </div>
-            </footer>
-            {/* System Status Indicator - For Demo Purposes */}
+                </footer>
+            )}
+
+            {/* System Status Indicator */}
             <StatusIndicator />
 
             {/* AI Chat Bot */}

@@ -2,7 +2,7 @@
 Schemas package
 """
 from .user import (
-    UserBase, UserCreate, UserUpdate, UserResponse, UserLogin, 
+    UserBase, UserCreate, UserUpdate, DietaryPreferencesUpdate, UserResponse, UserLogin, 
     Token, TokenData, UserRole
 )
 from .restaurant import (
@@ -27,7 +27,7 @@ from .ai import (
 
 __all__ = [
     # User
-    "UserBase", "UserCreate", "UserUpdate", "UserResponse", "UserLogin",
+    "UserBase", "UserCreate", "UserUpdate", "DietaryPreferencesUpdate", "UserResponse", "UserLogin",
     "Token", "TokenData", "UserRole",
     # Restaurant
     "RestaurantBase", "RestaurantCreate", "RestaurantUpdate", "RestaurantResponse",

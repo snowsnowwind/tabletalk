@@ -13,6 +13,7 @@ from ..models import Reservation, Restaurant, User, ReservationStatus as ResStat
 from ..schemas import (
     ReservationCreate, ReservationUpdate, ReservationResponse, ReservationWithUser
 )
+from ..schemas.reservation import normalize_phone
 from ..services.auth import get_current_user, get_current_user_optional, require_admin
 
 router = APIRouter(prefix="/api/reservations", tags=["Reservations"])
@@ -47,7 +48,7 @@ async def create_reservation(
     """Create a new reservation"""
     # Verify restaurant exists
     restaurant = db.query(Restaurant).filter(Restaurant.id == reservation_data.restaurant_id).first()
-    if not restaurant:
+    if not restaurant or not restaurant.is_active:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Restaurant not found"
@@ -81,7 +82,15 @@ async def create_reservation(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Name and phone number are required"
         )
-    
+
+    try:
+        reservation.guest_phone = normalize_phone(reservation.guest_phone)
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A valid phone number is required",
+        ) from error
+
     db.add(reservation)
     db.commit()
     db.refresh(reservation)

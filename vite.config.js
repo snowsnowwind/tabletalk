@@ -5,6 +5,16 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    open: true
+    open: true,
+    allowedHosts: [
+      "penological-literalistic-inger.ngrok-free.dev"
+    ],
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8570',
+        changeOrigin: true,
+        secure: false
+      }
+    }
   }
 })

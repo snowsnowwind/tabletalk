@@ -1,415 +1,396 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import {
-    Building2, Calendar, Users, ChefHat, Clock,
-    CheckCircle, ArrowRight, Plus, Sparkles,
-    FileText, Download
+    User, Calendar, Building, Utensils, Clock,
+    Check, ChevronRight, ChevronLeft, MapPin, Users
 } from 'lucide-react'
+import apiService from '../services/api'
 import './CorporateEvents.css'
 
 function CorporateEvents() {
+    const navigate = useNavigate()
     const [currentStep, setCurrentStep] = useState(1)
-    const [eventData, setEventData] = useState({
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [submitError, setSubmitError] = useState('')
+    const [formData, setFormData] = useState({
+        companyName: '',
+        contactName: '',
+        email: '',
+        phone: '',
         eventType: '',
         date: '',
         time: '',
-        guestCount: 50,
-        budget: '',
+        guests: 20,
         venue: '',
-        menuPreferences: [],
-        eventFlow: []
+        venueType: '',
+        menuPackage: '',
+        specialRequests: ''
     })
 
     const steps = [
-        { id: 1, title: 'Event Details', icon: Calendar },
-        { id: 2, title: 'Menu Selection', icon: ChefHat },
-        { id: 3, title: 'Event Flow', icon: Clock },
-        { id: 4, title: 'Confirmation', icon: CheckCircle }
+        { id: 1, label: 'Info', icon: User, description: 'Contact Information' },
+        { id: 2, label: 'Date & Style', icon: Calendar, description: 'Event Details' },
+        { id: 3, label: 'Venue', icon: Building, description: 'Choose Location' },
+        { id: 4, label: 'Menu', icon: Utensils, description: 'Select Package' },
+        { id: 5, label: 'Timeline', icon: Clock, description: 'Review & Confirm' }
     ]
 
     const eventTypes = [
-        { value: 'annual_dinner', label: 'Annual Dinner', emoji: '🎉' },
-        { value: 'business_meeting', label: 'Business Meeting', emoji: '💼' },
-        { value: 'team_building', label: 'Team Building', emoji: '🤝' },
-        { value: 'client_dinner', label: 'Client Dinner', emoji: '🍷' },
-        { value: 'celebration', label: 'Celebration', emoji: '🎊' },
-        { value: 'conference', label: 'Conference', emoji: '📊' }
+        'Company Dinner',
+        'Team Building',
+        'Client Meeting',
+        'Product Launch',
+        'Holiday Party',
+        'Annual Celebration'
     ]
 
-    const menuOptions = [
-        { id: 1, name: 'Chinese Banquet Set A', description: '10-course traditional banquet', price: 688, perPerson: true },
-        { id: 2, name: 'Chinese Banquet Set B', description: '12-course premium selection', price: 888, perPerson: true },
-        { id: 3, name: 'Western Fine Dining', description: '5-course French-inspired', price: 998, perPerson: true },
-        { id: 4, name: 'Fusion Experience', description: 'Best of East meets West', price: 788, perPerson: true },
-        { id: 5, name: 'Vegetarian Special', description: 'Plant-based gourmet', price: 588, perPerson: true }
+    const venues = [
+        { id: 'main', name: 'Main Dining Hall', capacity: '50-100', image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400' },
+        { id: 'private', name: 'Private Room A', capacity: '10-20', image: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400' },
+        { id: 'vip', name: 'VIP Suite', capacity: '20-40', image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400' },
+        { id: 'rooftop', name: 'Rooftop Terrace', capacity: '30-80', image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400' }
     ]
 
-    const eventFlowTemplates = [
-        { id: 'arrival', name: 'Guest Arrival', duration: '30 min', emoji: '🚪' },
-        { id: 'cocktail', name: 'Cocktail Reception', duration: '45 min', emoji: '🍸' },
-        { id: 'dinner', name: 'Dinner Service', duration: '90 min', emoji: '🍽️' },
-        { id: 'speech', name: 'Speeches & Awards', duration: '30 min', emoji: '🎤' },
-        { id: 'entertainment', name: 'Entertainment', duration: '45 min', emoji: '🎵' },
-        { id: 'networking', name: 'Networking', duration: '30 min', emoji: '🤝' },
-        { id: 'closing', name: 'Closing Remarks', duration: '15 min', emoji: '👋' }
+    const menuPackages = [
+        { id: 'standard', name: 'Standard Package', price: 'HK$488/person', description: '8-course set menu' },
+        { id: 'premium', name: 'Premium Package', price: 'HK$688/person', description: '10-course set menu with seafood' },
+        { id: 'deluxe', name: 'Deluxe Package', price: 'HK$888/person', description: '12-course banquet with premium selections' },
+        { id: 'custom', name: 'Custom Menu', price: 'Contact for pricing', description: 'Tailored to your requirements' }
     ]
 
-    const toggleEventFlow = (item) => {
-        setEventData(prev => {
-            const exists = prev.eventFlow.find(e => e.id === item.id)
-            if (exists) {
-                return { ...prev, eventFlow: prev.eventFlow.filter(e => e.id !== item.id) }
-            } else {
-                return { ...prev, eventFlow: [...prev.eventFlow, item] }
+    const handleNext = async () => {
+        if (currentStep < 5) {
+            setCurrentStep(currentStep + 1)
+        } else {
+            const requiredFields = [
+                formData.companyName,
+                formData.contactName,
+                formData.email,
+                formData.phone,
+                formData.eventType,
+                formData.date,
+                formData.time,
+                formData.venue,
+                formData.menuPackage
+            ]
+
+            if (requiredFields.some(value => !value)) {
+                setSubmitError('Please complete all required event details before confirming.')
+                return
             }
-        })
+
+            setIsSubmitting(true)
+            setSubmitError('')
+
+            try {
+                const event = await apiService.createEvent({
+                    name: `${formData.companyName} - ${formData.eventType}`,
+                    event_type: formData.eventType,
+                    description: `${formData.eventType} for ${formData.companyName}`,
+                    date: `${formData.date}T00:00:00`,
+                    start_time: formData.time,
+                    expected_guests: formData.guests,
+                    company_name: formData.companyName,
+                    contact_name: formData.contactName,
+                    contact_email: formData.email,
+                    contact_phone: formData.phone,
+                    venue_preferences: {
+                        venue: formData.venue,
+                        menu_package: formData.menuPackage
+                    },
+                    special_requirements: formData.specialRequests || null
+                })
+
+                window.alert(`Corporate event request saved successfully. Event ID: ${event.id}`)
+                navigate('/')
+            } catch (error) {
+                setSubmitError(error.message || 'Failed to save the corporate event request.')
+            } finally {
+                setIsSubmitting(false)
+            }
+        }
     }
 
-    const toggleMenu = (menuId) => {
-        setEventData(prev => {
-            if (prev.menuPreferences.includes(menuId)) {
-                return { ...prev, menuPreferences: prev.menuPreferences.filter(id => id !== menuId) }
-            } else {
-                return { ...prev, menuPreferences: [...prev.menuPreferences, menuId] }
-            }
-        })
+    const handlePrevious = () => {
+        if (currentStep > 1) {
+            setCurrentStep(currentStep - 1)
+        }
     }
 
-    const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 4))
-    const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1))
+    const updateFormData = (field, value) => {
+        setFormData({ ...formData, [field]: value })
+    }
 
-    const renderStep = () => {
+    const renderStepContent = () => {
         switch (currentStep) {
             case 1:
                 return (
                     <div className="step-content">
-                        <h3>Event Details</h3>
+                        <h2 className="step-title">Contact Information</h2>
+                        <p className="step-description">Please provide your details for the event booking.</p>
 
-                        <div className="form-section">
-                            <label>Event Type</label>
-                            <div className="event-type-grid">
+                        <div className="form-grid">
+                            <div className="form-group">
+                                <label className="form-label">Company Name</label>
+                                <input
+                                    type="text"
+                                    className="input"
+                                    placeholder="Your company name"
+                                    value={formData.companyName}
+                                    onChange={(e) => updateFormData('companyName', e.target.value)}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Contact Person</label>
+                                <input
+                                    type="text"
+                                    className="input"
+                                    placeholder="Your full name"
+                                    value={formData.contactName}
+                                    onChange={(e) => updateFormData('contactName', e.target.value)}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Email Address</label>
+                                <input
+                                    type="email"
+                                    className="input"
+                                    placeholder="email@company.com"
+                                    value={formData.email}
+                                    onChange={(e) => updateFormData('email', e.target.value)}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Phone Number</label>
+                                <input
+                                    type="tel"
+                                    className="input"
+                                    placeholder="+852 XXXX XXXX"
+                                    value={formData.phone}
+                                    onChange={(e) => updateFormData('phone', e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )
+            case 2:
+                return (
+                    <div className="step-content">
+                        <h2 className="step-title">Event Details</h2>
+                        <p className="step-description">Tell us about your event.</p>
+
+                        <div className="form-group">
+                            <label className="form-label">Event Type</label>
+                            <div className="option-grid">
                                 {eventTypes.map(type => (
                                     <button
-                                        key={type.value}
-                                        className={`event-type-btn glass-card ${eventData.eventType === type.value ? 'active' : ''}`}
-                                        onClick={() => setEventData(prev => ({ ...prev, eventType: type.value }))}
+                                        key={type}
+                                        className={`option-btn ${formData.eventType === type ? 'active' : ''}`}
+                                        onClick={() => updateFormData('eventType', type)}
                                     >
-                                        <span className="event-type-emoji">{type.emoji}</span>
-                                        <span>{type.label}</span>
+                                        {type}
                                     </button>
                                 ))}
                             </div>
                         </div>
 
-                        <div className="form-row">
+                        <div className="form-grid">
                             <div className="form-group">
-                                <label><Calendar size={16} /> Date</label>
+                                <label className="form-label">Event Date</label>
                                 <input
                                     type="date"
                                     className="input"
-                                    value={eventData.date}
-                                    onChange={(e) => setEventData(prev => ({ ...prev, date: e.target.value }))}
+                                    value={formData.date}
+                                    onChange={(e) => updateFormData('date', e.target.value)}
                                 />
                             </div>
                             <div className="form-group">
-                                <label><Clock size={16} /> Time</label>
-                                <input
-                                    type="time"
-                                    className="input"
-                                    value={eventData.time}
-                                    onChange={(e) => setEventData(prev => ({ ...prev, time: e.target.value }))}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label><Users size={16} /> Expected Guests</label>
-                                <input
-                                    type="number"
-                                    className="input"
-                                    value={eventData.guestCount}
-                                    onChange={(e) => setEventData(prev => ({ ...prev, guestCount: Number(e.target.value) }))}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Budget per Person (HKD)</label>
+                                <label className="form-label">Start Time</label>
                                 <select
                                     className="input"
-                                    value={eventData.budget}
-                                    onChange={(e) => setEventData(prev => ({ ...prev, budget: e.target.value }))}
+                                    value={formData.time}
+                                    onChange={(e) => updateFormData('time', e.target.value)}
                                 >
-                                    <option value="">Select budget</option>
-                                    <option value="500-700">$500 - $700</option>
-                                    <option value="700-900">$700 - $900</option>
-                                    <option value="900-1200">$900 - $1,200</option>
-                                    <option value="1200+">$1,200+</option>
+                                    <option value="">Select time</option>
+                                    <option value="11:30">11:30 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="18:00">6:00 PM</option>
+                                    <option value="18:30">6:30 PM</option>
+                                    <option value="19:00">7:00 PM</option>
+                                    <option value="19:30">7:30 PM</option>
                                 </select>
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Number of Guests</label>
+                                <div className="guest-input">
+                                    <button onClick={() => updateFormData('guests', Math.max(10, formData.guests - 5))}>-</button>
+                                    <span>{formData.guests}</span>
+                                    <button onClick={() => updateFormData('guests', Math.min(200, formData.guests + 5))}>+</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 )
-
-            case 2:
+            case 3:
                 return (
                     <div className="step-content">
-                        <h3>Menu Selection</h3>
-                        <p className="step-description">
-                            <Sparkles size={16} />
-                            AI recommends menus based on your guest count and budget
-                        </p>
+                        <h2 className="step-title">Select Venue</h2>
+                        <p className="step-description">Choose the perfect space for your event.</p>
 
-                        <div className="menu-options">
-                            {menuOptions.map(menu => (
+                        <div className="venue-grid">
+                            {venues.map(venue => (
                                 <div
-                                    key={menu.id}
-                                    className={`menu-option glass-card ${eventData.menuPreferences.includes(menu.id) ? 'selected' : ''}`}
-                                    onClick={() => toggleMenu(menu.id)}
+                                    key={venue.id}
+                                    className={`venue-card ${formData.venue === venue.id ? 'active' : ''}`}
+                                    onClick={() => updateFormData('venue', venue.id)}
                                 >
-                                    <div className="menu-option-info">
-                                        <h4>{menu.name}</h4>
-                                        <p>{menu.description}</p>
-                                    </div>
-                                    <div className="menu-option-price">
-                                        <span className="price">${menu.price}</span>
-                                        <span className="per-person">per person</span>
-                                    </div>
-                                    <div className="menu-option-check">
-                                        {eventData.menuPreferences.includes(menu.id) ? (
-                                            <CheckCircle size={24} />
-                                        ) : (
-                                            <Plus size={24} />
+                                    <div className="venue-image">
+                                        <img src={venue.image} alt={venue.name} />
+                                        {formData.venue === venue.id && (
+                                            <div className="venue-selected">
+                                                <Check size={24} />
+                                            </div>
                                         )}
+                                    </div>
+                                    <div className="venue-info">
+                                        <h4>{venue.name}</h4>
+                                        <p><Users size={14} /> Capacity: {venue.capacity}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 )
-
-            case 3:
-                return (
-                    <div className="step-content">
-                        <h3>Event Flow Builder</h3>
-                        <p className="step-description">
-                            <Sparkles size={16} />
-                            Drag and arrange your event timeline
-                        </p>
-
-                        <div className="event-flow-builder">
-                            <div className="flow-options">
-                                <h4>Add to Timeline</h4>
-                                <div className="flow-items-grid">
-                                    {eventFlowTemplates.map(item => (
-                                        <button
-                                            key={item.id}
-                                            className={`flow-item-btn ${eventData.eventFlow.find(e => e.id === item.id) ? 'added' : ''}`}
-                                            onClick={() => toggleEventFlow(item)}
-                                        >
-                                            <span className="flow-emoji">{item.emoji}</span>
-                                            <span className="flow-name">{item.name}</span>
-                                            <span className="flow-duration">{item.duration}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="flow-timeline">
-                                <h4>Your Timeline</h4>
-                                {eventData.eventFlow.length === 0 ? (
-                                    <div className="flow-empty">
-                                        <p>Click items above to add them to your timeline</p>
-                                    </div>
-                                ) : (
-                                    <div className="timeline-items">
-                                        {eventData.eventFlow.map((item, index) => (
-                                            <motion.div
-                                                key={item.id}
-                                                className="timeline-item glass-card"
-                                                initial={{ opacity: 0, x: -20 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: index * 0.1 }}
-                                            >
-                                                <div className="timeline-number">{index + 1}</div>
-                                                <span className="timeline-emoji">{item.emoji}</span>
-                                                <div className="timeline-info">
-                                                    <span className="timeline-name">{item.name}</span>
-                                                    <span className="timeline-duration">{item.duration}</span>
-                                                </div>
-                                                <button
-                                                    className="timeline-remove"
-                                                    onClick={() => toggleEventFlow(item)}
-                                                >
-                                                    ×
-                                                </button>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )
-
             case 4:
                 return (
                     <div className="step-content">
-                        <h3>Confirmation</h3>
+                        <h2 className="step-title">Select Menu Package</h2>
+                        <p className="step-description">Choose a dining package for your guests.</p>
 
-                        <div className="confirmation-summary glass-card">
-                            <div className="summary-section">
-                                <h4><Calendar size={18} /> Event Details</h4>
-                                <div className="summary-grid">
-                                    <div className="summary-item">
-                                        <span className="label">Type</span>
-                                        <span className="value">{eventTypes.find(t => t.value === eventData.eventType)?.label || 'Not selected'}</span>
+                        <div className="menu-package-grid">
+                            {menuPackages.map(pkg => (
+                                <div
+                                    key={pkg.id}
+                                    className={`menu-package-card ${formData.menuPackage === pkg.id ? 'active' : ''}`}
+                                    onClick={() => updateFormData('menuPackage', pkg.id)}
+                                >
+                                    <div className="package-header">
+                                        <h4>{pkg.name}</h4>
+                                        <span className="package-price">{pkg.price}</span>
                                     </div>
-                                    <div className="summary-item">
-                                        <span className="label">Date</span>
-                                        <span className="value">{eventData.date || 'Not selected'}</span>
-                                    </div>
-                                    <div className="summary-item">
-                                        <span className="label">Time</span>
-                                        <span className="value">{eventData.time || 'Not selected'}</span>
-                                    </div>
-                                    <div className="summary-item">
-                                        <span className="label">Guests</span>
-                                        <span className="value">{eventData.guestCount}</span>
-                                    </div>
+                                    <p className="package-desc">{pkg.description}</p>
+                                    {formData.menuPackage === pkg.id && (
+                                        <Check size={20} className="package-check" />
+                                    )}
                                 </div>
-                            </div>
-
-                            <div className="summary-section">
-                                <h4><ChefHat size={18} /> Selected Menus</h4>
-                                {eventData.menuPreferences.length > 0 ? (
-                                    <ul className="summary-list">
-                                        {eventData.menuPreferences.map(id => {
-                                            const menu = menuOptions.find(m => m.id === id)
-                                            return (
-                                                <li key={id}>{menu?.name} - ${menu?.price}/person</li>
-                                            )
-                                        })}
-                                    </ul>
-                                ) : (
-                                    <p className="no-selection">No menus selected</p>
-                                )}
-                            </div>
-
-                            <div className="summary-section">
-                                <h4><Clock size={18} /> Event Timeline</h4>
-                                {eventData.eventFlow.length > 0 ? (
-                                    <div className="summary-timeline">
-                                        {eventData.eventFlow.map((item, index) => (
-                                            <span key={item.id} className="summary-flow-item">
-                                                {item.emoji} {item.name}
-                                                {index < eventData.eventFlow.length - 1 && ' → '}
-                                            </span>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="no-selection">No timeline created</p>
-                                )}
-                            </div>
-
-                            <div className="summary-actions">
-                                <button className="btn btn-secondary">
-                                    <FileText size={18} />
-                                    Save as Draft
-                                </button>
-                                <button className="btn btn-primary">
-                                    <Download size={18} />
-                                    Export PDF
-                                </button>
-                            </div>
+                            ))}
                         </div>
 
-                        <div className="final-actions">
-                            <button className="btn btn-accent btn-lg submit-btn">
-                                <CheckCircle size={20} />
-                                Submit Reservation Request
-                            </button>
+                        <div className="form-group">
+                            <label className="form-label">Special Requests</label>
+                            <textarea
+                                className="input"
+                                placeholder="Dietary requirements, decorations, or other requests..."
+                                value={formData.specialRequests}
+                                onChange={(e) => updateFormData('specialRequests', e.target.value)}
+                            />
                         </div>
                     </div>
                 )
+            case 5:
+                return (
+                    <div className="step-content">
+                        <h2 className="step-title">Review & Confirm</h2>
+                        <p className="step-description">Please review your booking details.</p>
 
+                        <div className="review-card">
+                            <div className="review-section">
+                                <h4>Contact</h4>
+                                <p>{formData.companyName}</p>
+                                <p>{formData.contactName}</p>
+                                <p>{formData.email}</p>
+                            </div>
+                            <div className="review-section">
+                                <h4>Event</h4>
+                                <p>{formData.eventType}</p>
+                                <p>{formData.date} at {formData.time}</p>
+                                <p>{formData.guests} guests</p>
+                            </div>
+                            <div className="review-section">
+                                <h4>Venue & Menu</h4>
+                                <p>{venues.find(v => v.id === formData.venue)?.name}</p>
+                                <p>{menuPackages.find(m => m.id === formData.menuPackage)?.name}</p>
+                            </div>
+                        </div>
+                    </div>
+                )
             default:
                 return null
         }
     }
 
     return (
-        <div className="corporate-page page">
-            <div className="container">
-                {/* Header */}
-                <motion.div
-                    className="page-header"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                >
-                    <span className="page-badge">
-                        <Building2 size={14} />
-                        Corporate Events
-                    </span>
-                    <h1 className="heading-display heading-2">
-                        Plan Your <span className="text-gradient-gold">Corporate Event</span>
-                    </h1>
-                    <p className="page-subtitle">
-                        From annual dinners to business meetings, let us help you create unforgettable experiences.
-                    </p>
-                </motion.div>
-
-                {/* Stepper */}
-                <motion.div
-                    className="stepper"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                >
-                    {steps.map((step, index) => (
-                        <div
-                            key={step.id}
-                            className={`step ${currentStep >= step.id ? 'active' : ''} ${currentStep === step.id ? 'current' : ''}`}
-                        >
-                            <div className="step-circle">
-                                {currentStep > step.id ? (
-                                    <CheckCircle size={20} />
-                                ) : (
-                                    <step.icon size={20} />
-                                )}
+        <div className="corporate-events-page">
+            <div className="corporate-container">
+                {/* Left Sidebar - Step Wizard */}
+                <div className="step-sidebar">
+                    <h3 className="sidebar-title">Book Corporate Event</h3>
+                    <div className="step-list">
+                        {steps.map((step, index) => (
+                            <div
+                                key={step.id}
+                                className={`step-item ${currentStep === step.id ? 'active' : ''} ${currentStep > step.id ? 'completed' : ''}`}
+                            >
+                                <div className="step-indicator">
+                                    {currentStep > step.id ? (
+                                        <Check size={16} />
+                                    ) : (
+                                        <span>{step.id}</span>
+                                    )}
+                                </div>
+                                <div className="step-info">
+                                    <span className="step-label">{step.label}</span>
+                                    <span className="step-desc">{step.description}</span>
+                                </div>
                             </div>
-                            <span className="step-title">{step.title}</span>
-                            {index < steps.length - 1 && <div className="step-line" />}
-                        </div>
-                    ))}
-                </motion.div>
+                        ))}
+                    </div>
+                </div>
 
-                {/* Step Content */}
-                <motion.div
-                    className="step-container glass-card"
-                    key={currentStep}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    {renderStep()}
+                {/* Main Content */}
+                <div className="step-main">
+                    <motion.div
+                        key={currentStep}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        {renderStepContent()}
+                    </motion.div>
 
-                    {/* Navigation */}
+                    {/* Navigation Buttons */}
                     <div className="step-navigation">
-                        <button
-                            className="btn btn-secondary"
-                            onClick={prevStep}
-                            disabled={currentStep === 1}
-                        >
-                            Back
-                        </button>
-                        {currentStep < 4 && (
-                            <button className="btn btn-primary" onClick={nextStep}>
-                                Continue
-                                <ArrowRight size={18} />
+                        {submitError && (
+                            <p className="error-message" role="alert">{submitError}</p>
+                        )}
+                        {currentStep > 1 && (
+                            <button className="btn btn-outline nav-btn" onClick={handlePrevious}>
+                                <ChevronLeft size={18} />
+                                Previous Step
                             </button>
                         )}
+                        <button
+                            className="btn btn-primary nav-btn"
+                            onClick={handleNext}
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? 'Saving...' : currentStep === 5 ? 'Confirm Booking' : 'Next'}
+                            {currentStep < 5 && <ChevronRight size={18} />}
+                        </button>
                     </div>
-                </motion.div>
+                </div>
             </div>
         </div>
     )

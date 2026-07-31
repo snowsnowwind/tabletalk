@@ -38,7 +38,7 @@ cp .env.example .env
 
 Update `.env` with:
 - Your PostgreSQL connection string
-- Your Gemini API key (optional, for AI features)
+- Your OpenCode Go API key (required for AI features)
 - A secure secret key for JWT
 
 ### 4. Initialize database
@@ -52,15 +52,15 @@ This creates tables and adds sample data.
 ### 5. Run the server
 
 ```bash
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 8570
 ```
 
-API will be available at: http://localhost:8000
+API will be available at: http://localhost:8570
 
 ## API Documentation
 
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+- Swagger UI: http://localhost:8570/docs
+- ReDoc: http://localhost:8570/redoc
 
 ## API Endpoints
 

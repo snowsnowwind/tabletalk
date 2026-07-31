@@ -23,7 +23,7 @@ class CorporateEvent(Base):
     __tablename__ = "corporate_events"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     restaurant_id = Column(Integer, ForeignKey("restaurants.id"))
     
     # Event details

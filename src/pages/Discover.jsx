@@ -1,308 +1,240 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion'
-import { Heart, X, RotateCcw, Sparkles, Star, MapPin, DollarSign } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
+import { X, Heart, MapPin, Star, Clock, UtensilsCrossed, Percent, ChevronRight } from 'lucide-react'
 import apiService from '../services/api'
 import './Discover.css'
 
 function Discover() {
-    const [restaurants, setRestaurants] = useState([])
+    const navigate = useNavigate()
     const [currentIndex, setCurrentIndex] = useState(0)
-    const [loading, setLoading] = useState(true)
-    const [liked, setLiked] = useState([])
-    const [direction, setDirection] = useState(null)
+    const [direction, setDirection] = useState(0)
+    const [restaurants, setRestaurants] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
+    const [loadError, setLoadError] = useState('')
 
     useEffect(() => {
-        loadRestaurants()
-    }, [])
+        let cancelled = false
 
-    const loadRestaurants = async () => {
-        setLoading(true)
-        try {
-            const data = await apiService.getRecommendations(1, 'discover', 10)
-            setRestaurants(data.results || [])
-            setCurrentIndex(0)
-        } catch (err) {
-            console.error('Failed to load restaurants:', err)
-        } finally {
-            setLoading(false)
+        apiService.getRestaurants()
+            .then((data) => {
+                if (cancelled) return
+                const availableRestaurants = data
+                    .filter((restaurant) => restaurant.is_active !== false)
+                    .map((restaurant) => ({
+                        id: restaurant.id,
+                        name: restaurant.name,
+                        cuisine: restaurant.cuisine,
+                        image: restaurant.images?.[0] || '/images/menu/har-gow.jpg',
+                        rating: restaurant.rating,
+                        priceLevel: '$'.repeat(restaurant.price_level || 1),
+                        distance: 'Hong Kong',
+                        tags: restaurant.features?.length
+                            ? restaurant.features.slice(0, 3)
+                            : [restaurant.cuisine],
+                        discount: 'Online reservations available',
+                        timeSlots: ['6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM'],
+                        location: restaurant.address || 'Hong Kong',
+                    }))
+                setRestaurants(availableRestaurants)
+                setCurrentIndex(0)
+                setLoadError('')
+            })
+            .catch((error) => {
+                if (cancelled) return
+                console.error('Failed to load restaurants', error)
+                setLoadError('Unable to load restaurants. Please try again.')
+            })
+            .finally(() => {
+                if (!cancelled) setIsLoading(false)
+            })
+
+        return () => {
+            cancelled = true
         }
-    }
+    }, [])
 
     const currentRestaurant = restaurants[currentIndex]
 
-    const handleSwipe = (swipeDirection) => {
-        if (!currentRestaurant) return
-
-        setDirection(swipeDirection)
-
-        if (swipeDirection === 'right') {
-            setLiked(prev => [...prev, currentRestaurant])
-        }
-
+    const handleSwipe = (dir) => {
+        setDirection(dir)
         setTimeout(() => {
-            setCurrentIndex(prev => prev + 1)
-            setDirection(null)
+            if (dir === 1) {
+                // Liked - navigate to reservation
+                navigate('/reservations', { state: { restaurantId: currentRestaurant.id } })
+            } else {
+                // Disliked - next card
+                setCurrentIndex((prev) => (prev + 1) % restaurants.length)
+            }
+            setDirection(0)
         }, 300)
     }
 
-    const handleUndo = () => {
-        if (currentIndex > 0) {
-            setCurrentIndex(prev => prev - 1)
-            // Remove from liked if it was liked
-            setLiked(prev => prev.filter(r => r.id !== restaurants[currentIndex - 1]?.id))
-        }
+    const handleViewMenu = () => {
+        navigate('/menu', { state: { restaurantId: currentRestaurant.id } })
     }
 
-    const renderPriceLevel = (level) => {
-        return Array(5).fill(null).map((_, i) => (
-            <DollarSign
-                key={i}
-                size={16}
-                className={i < level ? 'price-active' : 'price-inactive'}
-            />
-        ))
+    if (isLoading) {
+        return <div className="discover-state">Loading restaurants...</div>
     }
 
-    const cardVariants = {
-        enter: {
-            scale: 0.95,
-            opacity: 0,
-            y: 50
-        },
-        center: {
-            scale: 1,
-            opacity: 1,
-            y: 0,
-            transition: { duration: 0.3 }
-        },
-        exitLeft: {
-            x: -300,
-            opacity: 0,
-            rotate: -20,
-            transition: { duration: 0.3 }
-        },
-        exitRight: {
-            x: 300,
-            opacity: 0,
-            rotate: 20,
-            transition: { duration: 0.3 }
-        }
+    if (loadError || !currentRestaurant) {
+        return <div className="discover-state">{loadError || 'No restaurants are available.'}</div>
     }
-
-    if (loading) {
-        return (
-            <div className="discover-page page">
-                <div className="container">
-                    <div className="discover-loading">
-                        <div className="skeleton-swipe-card glass-card">
-                            <div className="skeleton skeleton-image-large"></div>
-                            <div className="skeleton-content">
-                                <div className="skeleton skeleton-title"></div>
-                                <div className="skeleton skeleton-text"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
-    const isFinished = currentIndex >= restaurants.length
 
     return (
-        <div className="discover-page page">
-            <div className="container">
-                {/* Header */}
-                <motion.div
-                    className="discover-header"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                >
-                    <h1 className="heading-display heading-3">
-                        <Sparkles className="header-icon" />
-                        Discover
+        <div className="discover-page">
+            <div className="discover-container">
+                {/* Page Header */}
+                <div className="discover-header">
+                    <h1 className="discover-title">
+                        Discover <span className="text-orange">Restaurants</span>
                     </h1>
-                    <p className="discover-subtitle">Swipe right to like, left to skip</p>
-                    <div className="liked-count">
-                        <Heart size={18} fill="currentColor" />
-                        <span>{liked.length} liked</span>
-                    </div>
-                </motion.div>
+                    <p className="discover-subtitle">Swipe right to book, left to skip</p>
+                </div>
 
-                {/* Swipe Area */}
-                <div className="swipe-container">
-                    {isFinished ? (
-                        <motion.div
-                            className="finished-state glass-card"
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
+                <div className="discover-restaurant-selector" aria-label="Restaurant selector">
+                    {restaurants.map((restaurant, index) => (
+                        <button
+                            key={restaurant.id}
+                            type="button"
+                            className={`discover-restaurant-option ${index === currentIndex ? 'active' : ''}`}
+                            onClick={() => {
+                                setDirection(0)
+                                setCurrentIndex(index)
+                            }}
                         >
-                            <Sparkles size={64} className="finished-icon" />
-                            <h2>You've seen them all!</h2>
-                            <p>You liked {liked.length} restaurant{liked.length !== 1 ? 's' : ''}</p>
-                            <button className="btn btn-primary btn-lg" onClick={loadRestaurants}>
-                                <RotateCcw size={20} />
-                                Start Over
-                            </button>
-                        </motion.div>
-                    ) : (
-                        <>
-                            {/* Background Cards Stack */}
-                            <div className="cards-stack">
-                                {restaurants.slice(currentIndex + 1, currentIndex + 3).map((r, i) => (
-                                    <div
-                                        key={r.id}
-                                        className="stack-card glass-card"
-                                        style={{
-                                            transform: `scale(${0.95 - i * 0.05}) translateY(${(i + 1) * 15}px)`,
-                                            zIndex: 10 - i
-                                        }}
-                                    >
-                                        <img src={r.image} alt="" className="stack-card-image" />
-                                    </div>
-                                ))}
+                            {restaurant.name}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Card Stack */}
+                <div className="card-stack">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentRestaurant.id}
+                            className="restaurant-card"
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{
+                                scale: 1,
+                                opacity: 1,
+                                x: direction === -1 ? -300 : direction === 1 ? 300 : 0,
+                                rotate: direction === -1 ? -15 : direction === 1 ? 15 : 0
+                            }}
+                            exit={{
+                                x: direction === -1 ? -300 : 300,
+                                opacity: 0,
+                                rotate: direction === -1 ? -15 : 15
+                            }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            {/* Card Image */}
+                            <div className="card-image-container">
+                                <img
+                                    src={currentRestaurant.image}
+                                    alt={currentRestaurant.name}
+                                    className="card-image"
+                                />
+                                <div className="card-image-overlay"></div>
+
+                                {/* Menu Button */}
+                                <button className="menu-button" onClick={handleViewMenu}>
+                                    <UtensilsCrossed size={16} />
+                                    Menu
+                                </button>
+
+                                {/* Rating Badge */}
+                                <div className="rating-badge">
+                                    <Star size={14} fill="#fff" />
+                                    <span>{currentRestaurant.rating}</span>
+                                </div>
                             </div>
 
-                            {/* Active Card */}
-                            <AnimatePresence mode="wait">
-                                {currentRestaurant && (
-                                    <motion.div
-                                        key={currentRestaurant.id}
-                                        className="swipe-card glass-card"
-                                        variants={cardVariants}
-                                        initial="enter"
-                                        animate="center"
-                                        exit={direction === 'left' ? 'exitLeft' : 'exitRight'}
-                                    >
-                                        {/* Card Image */}
-                                        <div className="swipe-card-image-wrapper">
-                                            <img
-                                                src={currentRestaurant.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800'}
-                                                alt={currentRestaurant.name}
-                                                className="swipe-card-image"
-                                            />
-                                            <div className="swipe-card-overlay">
-                                                <span className="badge badge-accent">{currentRestaurant.cuisine}</span>
-                                            </div>
+                            {/* Card Content */}
+                            <div className="card-content">
+                                {/* Restaurant Info */}
+                                <div className="restaurant-info">
+                                    <h2 className="restaurant-name">{currentRestaurant.name}</h2>
+                                    <p className="restaurant-cuisine">{currentRestaurant.cuisine}</p>
 
-                                            {/* Swipe Indicators */}
-                                            <AnimatePresence>
-                                                {direction === 'right' && (
-                                                    <motion.div
-                                                        className="swipe-indicator like"
-                                                        initial={{ opacity: 0, scale: 0.5 }}
-                                                        animate={{ opacity: 1, scale: 1 }}
-                                                        exit={{ opacity: 0 }}
-                                                    >
-                                                        <Heart size={48} fill="currentColor" />
-                                                    </motion.div>
-                                                )}
-                                                {direction === 'left' && (
-                                                    <motion.div
-                                                        className="swipe-indicator nope"
-                                                        initial={{ opacity: 0, scale: 0.5 }}
-                                                        animate={{ opacity: 1, scale: 1 }}
-                                                        exit={{ opacity: 0 }}
-                                                    >
-                                                        <X size={48} />
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
-                                        </div>
+                                    {/* Tags */}
+                                    <div className="restaurant-tags">
+                                        {currentRestaurant.tags.map((tag, i) => (
+                                            <span key={i} className="tag tag-primary">{tag}</span>
+                                        ))}
+                                    </div>
+                                </div>
 
-                                        {/* Card Content */}
-                                        <div className="swipe-card-content">
-                                            <div className="swipe-card-header">
-                                                <h2 className="swipe-card-title">{currentRestaurant.name}</h2>
-                                                <div className="swipe-card-rating">
-                                                    <Star size={18} fill="#fbbf24" color="#fbbf24" />
-                                                    <span>{currentRestaurant.rating.toFixed(1)}</span>
-                                                </div>
-                                            </div>
+                                {/* Discount Banner */}
+                                <div className="discount-banner">
+                                    <Percent size={18} />
+                                    <span>{currentRestaurant.discount}</span>
+                                </div>
 
-                                            <div className="swipe-card-meta">
-                                                <div className="swipe-card-price">
-                                                    {renderPriceLevel(currentRestaurant.price_level)}
-                                                </div>
-                                                {currentRestaurant.address && (
-                                                    <div className="swipe-card-location">
-                                                        <MapPin size={14} />
-                                                        <span>{currentRestaurant.address}</span>
-                                                    </div>
-                                                )}
-                                            </div>
+                                {/* Time Slots */}
+                                <div className="time-slots-section">
+                                    <h4 className="time-slots-title">Available Times</h4>
+                                    <div className="time-slots">
+                                        {currentRestaurant.timeSlots.map((time, i) => (
+                                            <button
+                                                key={i}
+                                                className="time-slot"
+                                                onClick={() => navigate('/reservations', { state: { restaurantId: currentRestaurant.id } })}
+                                            >
+                                                {time}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
 
-                                            {currentRestaurant.reason && (
-                                                <div className="swipe-card-reason">
-                                                    <Sparkles size={16} />
-                                                    <span>{currentRestaurant.reason}</span>
-                                                </div>
-                                            )}
+                                {/* Location */}
+                                <div className="location-section">
+                                    <div className="location-info">
+                                        <MapPin size={16} />
+                                        <span>{currentRestaurant.location}</span>
+                                        <span className="distance">({currentRestaurant.distance})</span>
+                                    </div>
+                                    <button className="view-map-btn">
+                                        View Map <ChevronRight size={14} />
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
 
-                                            {currentRestaurant.score && (
-                                                <div className="swipe-card-score">
-                                                    <span className="score-label">AI Match</span>
-                                                    <span className="score-value">{currentRestaurant.score.toFixed(1)}</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </>
-                    )}
+                    {/* Background Cards for Stack Effect */}
+                    <div className="stack-card stack-card-1"></div>
+                    <div className="stack-card stack-card-2"></div>
                 </div>
 
                 {/* Action Buttons */}
-                {!isFinished && (
-                    <motion.div
-                        className="swipe-actions"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
+                <div className="swipe-actions">
+                    <button
+                        className="swipe-btn swipe-btn-reject"
+                        onClick={() => handleSwipe(-1)}
+                        aria-label="Skip"
                     >
-                        <button
-                            className="action-btn undo-btn"
-                            onClick={handleUndo}
-                            disabled={currentIndex === 0}
-                        >
-                            <RotateCcw size={24} />
-                        </button>
-                        <button
-                            className="action-btn nope-btn"
-                            onClick={() => handleSwipe('left')}
-                        >
-                            <X size={32} />
-                        </button>
-                        <button
-                            className="action-btn like-btn"
-                            onClick={() => handleSwipe('right')}
-                        >
-                            <Heart size={32} />
-                        </button>
-                    </motion.div>
-                )}
+                        <X size={28} />
+                    </button>
+                    <button
+                        className="swipe-btn swipe-btn-like"
+                        onClick={() => handleSwipe(1)}
+                        aria-label="Like"
+                    >
+                        <Heart size={28} />
+                    </button>
+                </div>
 
-                {/* Liked Restaurants Preview */}
-                {liked.length > 0 && (
-                    <motion.div
-                        className="liked-preview"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                    >
-                        <h3>Your Likes</h3>
-                        <div className="liked-avatars">
-                            {liked.slice(-5).map((r) => (
-                                <div key={r.id} className="liked-avatar">
-                                    <img src={r.image} alt={r.name} />
-                                </div>
-                            ))}
-                            {liked.length > 5 && (
-                                <div className="liked-more">+{liked.length - 5}</div>
-                            )}
-                        </div>
-                    </motion.div>
-                )}
+                {/* Progress Dots */}
+                <div className="progress-dots">
+                    {restaurants.map((_, i) => (
+                        <div
+                            key={i}
+                            className={`progress-dot ${i === currentIndex ? 'active' : ''}`}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     )

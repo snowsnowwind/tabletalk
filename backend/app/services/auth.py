@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from passlib.exc import UnknownHashError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -16,22 +17,23 @@ from ..schemas import TokenData
 
 settings = get_settings()
 
-# Password hashing - DISABLED as per user request
-# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt_sha256", "bcrypt"], deprecated="auto")
 
 # JWT bearer scheme
 security = HTTPBearer()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password - PLAIN TEXT MODE"""
-    # Simple string comparison
-    return plain_password == hashed_password
+    """Verify a plaintext password against its adaptive bcrypt hash."""
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except (TypeError, ValueError, UnknownHashError):
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    """Hash a password - PLAIN TEXT MODE (returns as is)"""
-    return password
+    """Hash a password with bcrypt before persistence."""
+    return pwd_context.hash(password)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

@@ -2,19 +2,34 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Bot, User, X, Sparkles, MessageCircle } from 'lucide-react'
 import apiService from '../services/api'
+import {
+    applyAssistantTurn,
+    assistantMessageForDisplay,
+    buildReservationPayload,
+} from '../utils/booking'
+import { useCart } from '../context/CartContext'
 import './ChatBot.css'
 
 function ChatBot({ isOpen, onClose }) {
+    const { cart, removeFromCart, clearCart } = useCart()
     const [messages, setMessages] = useState([])
     const [inputValue, setInputValue] = useState('')
     const [isTyping, setIsTyping] = useState(false)
     const [quickReplies, setQuickReplies] = useState([])
+    const [restaurants, setRestaurants] = useState(null)
+    const [restaurantLoadError, setRestaurantLoadError] = useState(false)
+    const [provider, setProvider] = useState(
+        () => localStorage.getItem('aiProvider') || 'opencode_go',
+    )
+    const [aiProviders, setAiProviders] = useState(null)
     const [context, setContext] = useState({
+        restaurant_id: null,
         date: null,
         time: null,
         guests: null,
         name: null,
-        phone: null
+        phone: null,
+        special_requests: null
     })
 
     const messagesEndRef = useRef(null)
@@ -31,36 +46,120 @@ function ChatBot({ isOpen, onClose }) {
     useEffect(() => {
         if (isOpen && messages.length === 0) {
             handleBotResponse({
-                response: "您好！我是 Table Talk 的 AI 预订助手。请问您想预订什么时候的位子？🥢",
-                quick_replies: ['明天晚上', '这周六', '查看推荐']
+                response: "Hello! I can help with restaurant bookings, menu recommendations, dish prices, and other quick questions. What would you like to know? 🥢",
+                quick_replies: ['Recommend dishes', 'View menu prices', 'Make a reservation']
             })
         }
     }, [isOpen])
 
-    const handleBotResponse = (data) => {
+    useEffect(() => {
+        if (!isOpen) return
+
+        let cancelled = false
+        setRestaurantLoadError(false)
+        apiService.getAIStatus()
+            .then((status) => {
+                if (cancelled) return
+                setAiProviders(status.providers || [])
+                const selected = status.providers?.find(
+                    (item) => item.id === provider && item.configured,
+                )
+                const fallback = status.providers?.find((item) => item.configured)
+                if (!selected && fallback) {
+                    setProvider(fallback.id)
+                    localStorage.setItem('aiProvider', fallback.id)
+                }
+            })
+            .catch((error) => {
+                console.error('Failed to load AI provider status', error)
+                if (!cancelled) setAiProviders([])
+            })
+        apiService.getRestaurants()
+            .then((data) => {
+                if (!cancelled) setRestaurants(data)
+            })
+            .catch((error) => {
+                console.error('Failed to load restaurants for AI booking', error)
+                if (!cancelled) {
+                    setRestaurants([])
+                    setRestaurantLoadError(true)
+                }
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [isOpen, provider])
+
+    const handleBotResponse = async (data) => {
         setIsTyping(false)
 
+        if (data.action === 'remove_cart_item') {
+            const itemId = Number(data.extracted_data?.cart_item_id)
+            if (Number.isInteger(itemId)) removeFromCart(itemId)
+        } else if (data.action === 'clear_cart') {
+            clearCart()
+        }
+
         // Add bot message
-        if (data.response) {
+        const displayMessage = assistantMessageForDisplay(data)
+        if (displayMessage) {
             setMessages(prev => [...prev, {
                 type: 'bot',
-                text: data.response,
+                text: displayMessage,
                 timestamp: new Date()
             }])
         }
 
-        // Update context if data was extracted
-        if (data.extracted_data) {
-            setContext(prev => ({ ...prev, ...data.extracted_data }))
-        }
+        const transition = applyAssistantTurn(context, data)
+        const bookingData = transition.bookingData
+
+        setContext(bookingData)
 
         // Set quick replies
         setQuickReplies(data.quick_replies || [])
 
         // Handle specific actions (e.g. if booking confirmed)
-        if (data.action === 'complete') {
-            // Could trigger a toast or redirect here
-            console.log("Booking completed!", data.extracted_data)
+        if (transition.cancelled) {
+            setQuickReplies([])
+            return
+        }
+
+        if (transition.shouldPersist) {
+            try {
+                const restaurants = await apiService.getRestaurants()
+                const { restaurant, payload } = buildReservationPayload(bookingData, restaurants)
+                const confirmed = window.confirm(
+                    `Confirm reservation:\nRestaurant: ${restaurant.name}\nDate: ${payload.date.slice(0, 10)} ${payload.time}\nGuests: ${payload.guests}\nName: ${payload.guest_name}\nPhone: ${payload.guest_phone}\nSpecial requests: ${payload.special_requests || 'None'}`,
+                )
+                if (!confirmed) return
+
+                const reservation = await apiService.createReservation(payload)
+                setMessages(prev => [...prev, {
+                    type: 'bot',
+                    text: `Your reservation request has been saved. Confirmation code: ${reservation.confirmation_code}.`,
+                    timestamp: new Date()
+                }])
+                setQuickReplies([])
+                setContext({
+                    restaurant_id: null,
+                    date: null,
+                    time: null,
+                    guests: null,
+                    name: null,
+                    phone: null,
+                    special_requests: null
+                })
+            } catch (error) {
+                console.error('Failed to save reservation', error)
+                setMessages(prev => [...prev, {
+                    type: 'bot',
+                    text: error.message === 'restaurant selection is required'
+                        ? 'Please select a restaurant before confirming your booking.'
+                        : error.message || 'Sorry, there was a problem saving your reservation. Please try again later.',
+                    timestamp: new Date()
+                }])
+            }
         }
     }
 
@@ -82,15 +181,23 @@ function ChatBot({ isOpen, onClose }) {
                 content: m.text
             }))
 
-            const response = await apiService.chatWithAssistant(text, history, context)
-            handleBotResponse(response)
+            const response = await apiService.chatWithAssistant(
+                text,
+                history,
+                {
+                    ...context,
+                    cart: cart.map(({ id, quantity }) => ({ id, quantity })),
+                },
+                provider,
+            )
+            await handleBotResponse(response)
 
         } catch (error) {
             console.error("Chat error:", error)
             setIsTyping(false)
             setMessages(prev => [...prev, {
                 type: 'bot',
-                text: "抱歉，我现在连接有点问题。您可以直接致电 +852 1234 5678 进行预订。",
+                text: "Sorry, I am having connection issues right now. You can book directly by calling +852 1234 5678.",
                 timestamp: new Date()
             }])
         }
@@ -128,12 +235,58 @@ function ChatBot({ isOpen, onClose }) {
                             </div>
                             <div>
                                 <h3>AI Assistant</h3>
-                                <span className="chatbot-status">To help with your booking</span>
+                                <span className="chatbot-status">Bookings, menus, prices, and quick questions</span>
                             </div>
                         </div>
                         <button className="chatbot-close" onClick={onClose}>
                             <X size={20} />
                         </button>
+                    </div>
+
+                    <div className="chatbot-restaurant-select">
+                        <label htmlFor="chatbot-provider">AI provider</label>
+                        <select
+                            id="chatbot-provider"
+                            value={provider}
+                            onChange={(event) => {
+                                setProvider(event.target.value)
+                                localStorage.setItem('aiProvider', event.target.value)
+                            }}
+                            disabled={!aiProviders?.some((item) => item.configured)}
+                        >
+                            {(aiProviders || [
+                                { id: 'opencode_go', name: 'OpenCode Go', configured: true },
+                                { id: 'deepseek', name: 'DeepSeek', configured: true },
+                            ]).map((item) => (
+                                <option key={item.id} value={item.id} disabled={!item.configured}>
+                                    {item.name}{item.configured ? '' : ' (not configured)'}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="chatbot-restaurant-select">
+                        <label htmlFor="chatbot-restaurant">Restaurant</label>
+                        <select
+                            id="chatbot-restaurant"
+                            value={context.restaurant_id ?? ''}
+                            onChange={(event) => setContext((current) => ({
+                                ...current,
+                                restaurant_id: event.target.value ? Number(event.target.value) : null,
+                            }))}
+                            disabled={!restaurants?.length}
+                        >
+                            <option value="">
+                                {restaurantLoadError
+                                    ? 'Unable to load restaurants'
+                                    : restaurants ? 'Select a restaurant' : 'Loading restaurants...'}
+                            </option>
+                            {restaurants?.map((restaurant) => (
+                                <option key={restaurant.id} value={restaurant.id}>
+                                    {restaurant.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     {/* Messages */}

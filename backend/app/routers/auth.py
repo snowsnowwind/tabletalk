@@ -6,8 +6,14 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 
 from ..database import get_db
-from ..models import User
-from ..schemas import UserCreate, UserLogin, UserResponse, Token
+from ..models import User, UserRole as DatabaseUserRole
+from ..schemas import (
+    DietaryPreferencesUpdate,
+    UserCreate,
+    UserLogin,
+    UserResponse,
+    Token,
+)
 from ..services.auth import (
     get_password_hash, verify_password, create_access_token,
     get_current_user
@@ -36,7 +42,7 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
         hashed_password=hashed_password,
         name=user_data.name,
         phone=user_data.phone,
-        role=user_data.role
+        role=DatabaseUserRole.CUSTOMER,
     )
     
     db.add(new_user)
@@ -50,15 +56,7 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
 async def login(user_data: UserLogin, db: Session = Depends(get_db)):
     """Login and get access token"""
     # Find user
-    print(f"DEBUG LOGIN: Received {user_data.email}, {user_data.password}")
     user = db.query(User).filter(User.email == user_data.email).first()
-    
-    if user:
-        print(f"DEBUG LOGIN: User found: {user.email}, Role: {user.role}, Hash: {user.hashed_password}")
-        is_match = verify_password(user_data.password, user.hashed_password)
-        print(f"DEBUG LOGIN: Match result: {is_match}")
-    else:
-        print("DEBUG LOGIN: User NOT found")
 
     if not user or not verify_password(user_data.password, user.hashed_password):
         raise HTTPException(
@@ -84,4 +82,20 @@ async def login(user_data: UserLogin, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     """Get current user information"""
+    return current_user
+
+
+@router.put("/me/dietary-preferences", response_model=UserResponse)
+async def update_dietary_preferences(
+    preference_data: DietaryPreferencesUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Save dietary restrictions and allergies for the current user."""
+    preferences = dict(current_user.preferences or {})
+    preferences["dietary"] = preference_data.model_dump()
+    current_user.preferences = preferences
+
+    db.commit()
+    db.refresh(current_user)
     return current_user

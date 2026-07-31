@@ -35,7 +35,7 @@ function RestaurantCard({ restaurant, index = 0 }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1, duration: 0.3 }}
             whileHover={{ y: -8, transition: { duration: 0.2 } }}
-            onClick={() => navigate(`/restaurant/${restaurant.id}`)}
+            onClick={() => navigate('/reservations', { state: { restaurantId: restaurant.id } })}
         >
             {/* Image Section */}
             <div className="card-image-wrapper">

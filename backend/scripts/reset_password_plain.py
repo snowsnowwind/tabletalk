@@ -1,12 +1,13 @@
-
+import getpass
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.database import SessionLocal
 from app.models import User
+from app.services.auth import get_password_hash
 
-def reset_password_plain():
+def reset_admin_password():
     db = SessionLocal()
     try:
         user = db.query(User).filter(User.email == "admin@tabletalk.com").first()
@@ -14,15 +15,19 @@ def reset_password_plain():
             print("User not found!")
             return
         
-        # Store PLAIN TEXT as requested by user
-        new_password = "admin123"
-        user.hashed_password = new_password
+        new_password = getpass.getpass("New admin password: ")
+        confirmation = getpass.getpass("Repeat new admin password: ")
+        if new_password != confirmation:
+            raise ValueError("Password confirmation does not match.")
+        if len(new_password) < 8:
+            raise ValueError("Password must contain at least 8 characters.")
+        user.hashed_password = get_password_hash(new_password)
         db.commit()
-        print(f"✅ Password for {user.email} set to PLAIN TEXT: {new_password}")
+        print(f"Password for {user.email} was reset using bcrypt_sha256.")
     except Exception as e:
         print(f"Error: {e}")
     finally:
         db.close()
 
 if __name__ == "__main__":
-    reset_password_plain()
+    reset_admin_password()

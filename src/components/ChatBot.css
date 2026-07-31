@@ -95,6 +95,46 @@
     color: var(--text-primary);
 }
 
+/* Restaurant selection */
+.chatbot-restaurant-select {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.chatbot-restaurant-select label {
+    flex: 0 0 auto;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+}
+
+.chatbot-restaurant-select select {
+    min-width: 0;
+    flex: 1;
+    padding: var(--space-2);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+}
+
+.chatbot-restaurant-select select:focus {
+    outline: none;
+    border-color: var(--accent-400);
+}
+
+.chatbot-restaurant-select select:disabled {
+    opacity: 0.65;
+}
+
+.chatbot-restaurant-select option {
+    background: #ffffff;
+    color: #1f2937;
+}
+
 /* Messages */
 .chatbot-messages {
     flex: 1;

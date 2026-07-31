@@ -1,18 +1,19 @@
-/* Discover Page Styles */
+/* Discover Page - Figma Tinder-Style Design */
 
 .discover-page {
-    min-height: calc(100vh - 80px);
+    min-height: calc(100vh - 60px);
+    background: var(--bg-black);
+    padding: var(--space-6);
     display: flex;
-    flex-direction: column;
+    justify-content: center;
 }
 
-.discover-page .container {
-    flex: 1;
+.discover-container {
+    width: 100%;
+    max-width: 420px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: var(--space-4);
-    padding-bottom: var(--space-8);
 }
 
 /* Header */
@@ -21,374 +22,341 @@
     margin-bottom: var(--space-6);
 }
 
-.discover-header h1 {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-3);
-}
-
-.header-icon {
-    color: var(--primary-400);
+.discover-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-2);
 }
 
 .discover-subtitle {
-    color: var(--text-secondary);
-    margin-top: var(--space-2);
-}
-
-.liked-count {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-top: var(--space-3);
-    padding: var(--space-2) var(--space-4);
-    background: rgba(239, 68, 68, 0.1);
-    border-radius: var(--radius-full);
-    color: #f87171;
     font-size: var(--text-sm);
-    font-weight: 500;
+    color: var(--text-secondary);
 }
 
-/* Swipe Container */
-.swipe-container {
+.discover-restaurant-selector {
+    width: 100%;
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-2);
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.discover-restaurant-option {
+    flex: 0 0 auto;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-full);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: var(--text-xs);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.discover-restaurant-option:hover,
+.discover-restaurant-option.active {
+    border-color: var(--orange);
+    background: rgba(245, 166, 35, 0.12);
+    color: var(--orange);
+}
+
+/* Card Stack */
+.card-stack {
     position: relative;
     width: 100%;
-    max-width: 380px;
     height: 520px;
     margin-bottom: var(--space-6);
 }
 
-/* Cards Stack */
-.cards-stack {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-}
-
+/* Stack Background Cards */
 .stack-card {
     position: absolute;
-    inset: 0;
-    overflow: hidden;
-}
-
-.stack-card-image {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    filter: brightness(0.7);
+    background: var(--bg-card);
+    border-radius: var(--radius-2xl);
+    border: 1px solid var(--border-dark);
 }
 
-/* Swipe Card */
-.swipe-card {
+.stack-card-1 {
+    transform: translateX(-50%) scale(0.95) translateY(8px);
+    opacity: 0.6;
+    z-index: 1;
+}
+
+.stack-card-2 {
+    transform: translateX(-50%) scale(0.9) translateY(16px);
+    opacity: 0.3;
+    z-index: 0;
+}
+
+/* Restaurant Card */
+.restaurant-card {
     position: absolute;
-    inset: 0;
-    z-index: 20;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-card);
+    border-radius: var(--radius-2xl);
+    border: 1px solid var(--border-dark);
     overflow: hidden;
-    cursor: grab;
+    z-index: 10;
     display: flex;
     flex-direction: column;
 }
 
-.swipe-card:active {
-    cursor: grabbing;
-}
-
-.swipe-card-image-wrapper {
+/* Card Image */
+.card-image-container {
     position: relative;
-    height: 300px;
+    height: 200px;
     overflow: hidden;
 }
 
-.swipe-card-image {
+.card-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.swipe-card-overlay {
+.card-image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg,
+            transparent 0%,
+            rgba(0, 0, 0, 0.6) 100%);
+}
+
+.menu-button {
     position: absolute;
     top: var(--space-4);
-    left: var(--space-4);
-}
-
-/* Swipe Indicators */
-.swipe-indicator {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: var(--space-4);
-    border-radius: 50%;
-    border: 4px solid;
-}
-
-.swipe-indicator.like {
-    color: #10b981;
-    border-color: #10b981;
-    background: rgba(16, 185, 129, 0.2);
-}
-
-.swipe-indicator.nope {
-    color: #ef4444;
-    border-color: #ef4444;
-    background: rgba(239, 68, 68, 0.2);
-}
-
-/* Card Content */
-.swipe-card-content {
-    padding: var(--space-5);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    flex: 1;
-}
-
-.swipe-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.swipe-card-title {
-    font-family: var(--font-display);
-    font-size: var(--text-xl);
-    font-weight: 600;
-}
-
-.swipe-card-rating {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-    font-weight: 600;
-}
-
-.swipe-card-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-    align-items: center;
-}
-
-.swipe-card-price {
-    display: flex;
-    gap: 2px;
-}
-
-.price-active {
-    color: var(--success);
-}
-
-.price-inactive {
-    color: var(--gray-700);
-}
-
-.swipe-card-location {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-    color: var(--text-tertiary);
-    font-size: var(--text-sm);
-}
-
-.swipe-card-reason {
+    right: var(--space-4);
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-3);
-    background: rgba(139, 92, 246, 0.1);
-    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-4);
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: var(--radius-full);
     font-size: var(--text-sm);
-    color: var(--primary-200);
-}
-
-.swipe-card-score {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-3);
-    background: var(--gradient-primary);
-    border-radius: var(--radius-md);
-    margin-top: auto;
-}
-
-.score-label {
-    font-size: var(--text-sm);
-    opacity: 0.9;
-}
-
-.score-value {
-    font-size: var(--text-xl);
-    font-weight: 700;
-}
-
-/* Action Buttons */
-.swipe-actions {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-4);
-}
-
-.action-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
+    font-weight: 600;
+    cursor: pointer;
     transition: all var(--transition-base);
 }
 
-.action-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
+.menu-button:hover {
+    background: var(--orange-hover);
+    transform: scale(1.05);
 }
 
-.undo-btn {
-    width: 48px;
-    height: 48px;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-secondary);
+.rating-badge {
+    position: absolute;
+    bottom: var(--space-4);
+    right: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2);
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: var(--radius-full);
+    color: white;
+    font-size: var(--text-sm);
+    font-weight: 600;
 }
 
-.undo-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.2);
+/* Card Content */
+.card-content {
+    flex: 1;
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.restaurant-info {
+    flex: 0;
+}
+
+.restaurant-name {
+    font-size: var(--text-xl);
+    font-weight: 700;
     color: var(--text-primary);
+    margin-bottom: var(--space-1);
 }
 
-.nope-btn {
-    width: 64px;
-    height: 64px;
-    background: rgba(239, 68, 68, 0.1);
-    color: #f87171;
-    border: 2px solid rgba(239, 68, 68, 0.3);
-}
-
-.nope-btn:hover {
-    background: rgba(239, 68, 68, 0.2);
-    transform: scale(1.1);
-}
-
-.like-btn {
-    width: 64px;
-    height: 64px;
-    background: rgba(16, 185, 129, 0.1);
-    color: #34d399;
-    border: 2px solid rgba(16, 185, 129, 0.3);
-}
-
-.like-btn:hover {
-    background: rgba(16, 185, 129, 0.2);
-    transform: scale(1.1);
-}
-
-/* Liked Preview */
-.liked-preview {
-    margin-top: var(--space-8);
-    text-align: center;
-}
-
-.liked-preview h3 {
+.restaurant-cuisine {
     font-size: var(--text-sm);
     color: var(--text-secondary);
     margin-bottom: var(--space-3);
 }
 
-.liked-avatars {
+.restaurant-tags {
     display: flex;
-    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
 }
 
-.liked-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 3px solid var(--bg-secondary);
-    margin-left: -12px;
-    transition: transform var(--transition-base);
-}
-
-.liked-avatar:first-child {
-    margin-left: 0;
-}
-
-.liked-avatar:hover {
-    transform: scale(1.1);
-    z-index: 10;
-}
-
-.liked-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.liked-more {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: var(--gradient-primary);
+/* Discount Banner */
+.discount-banner {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: rgba(245, 166, 35, 0.1);
+    border: 1px solid rgba(245, 166, 35, 0.3);
+    border-radius: var(--radius-lg);
+    color: var(--orange);
+    font-size: var(--text-sm);
+    font-weight: 500;
+}
+
+/* Time Slots */
+.time-slots-section {
+    flex: 1;
+}
+
+.time-slots-title {
     font-size: var(--text-sm);
     font-weight: 600;
-    margin-left: -12px;
-    border: 3px solid var(--bg-secondary);
-}
-
-/* Finished State */
-.finished-state {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: var(--space-8);
-}
-
-.finished-icon {
-    color: var(--primary-400);
-    margin-bottom: var(--space-4);
-}
-
-.finished-state h2 {
-    font-family: var(--font-display);
-    margin-bottom: var(--space-2);
-}
-
-.finished-state p {
     color: var(--text-secondary);
+    margin-bottom: var(--space-3);
+}
+
+.time-slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+/* Location */
+.location-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-dark);
+}
+
+.location-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.distance {
+    color: var(--text-tertiary);
+}
+
+.view-map-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--orange);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.view-map-btn:hover {
+    text-decoration: underline;
+}
+
+/* Swipe Actions */
+.swipe-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-10);
     margin-bottom: var(--space-6);
 }
 
-/* Loading State */
-.discover-loading {
+.swipe-btn {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.swipe-btn-reject {
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 2px solid var(--border-dark);
+}
+
+.swipe-btn-reject:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: #ef4444;
+    transform: scale(1.1);
+}
+
+.swipe-btn-like {
+    background: var(--orange);
+    color: white;
+}
+
+.swipe-btn-like:hover {
+    background: var(--orange-hover);
+    transform: scale(1.1);
+    box-shadow: var(--shadow-orange);
+}
+
+/* Progress Dots */
+.progress-dots {
     display: flex;
     justify-content: center;
-    padding-top: var(--space-8);
+    gap: var(--space-2);
 }
 
-.skeleton-swipe-card {
-    width: 100%;
-    max-width: 380px;
-    overflow: hidden;
+.progress-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--bg-input);
+    transition: all var(--transition-base);
 }
 
-.skeleton-image-large {
-    height: 300px;
+.progress-dot.active {
+    width: 24px;
+    background: var(--orange);
 }
 
 /* Responsive */
 @media (max-width: 480px) {
-    .swipe-container {
-        max-width: 100%;
+    .discover-page {
+        padding: var(--space-4);
+    }
+
+    .card-stack {
         height: 480px;
     }
 
-    .swipe-card-image-wrapper {
-        height: 260px;
+    .card-image-container {
+        height: 160px;
     }
+}
+
+.discover-state {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-black);
+    color: var(--text-secondary);
+    font-size: var(--text-lg);
 }

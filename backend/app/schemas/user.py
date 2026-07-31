@@ -1,8 +1,8 @@
 """
 User schemas for request/response validation
 """
-from pydantic import BaseModel, EmailStr
-from typing import Optional, Dict, Any
+from pydantic import BaseModel, EmailStr, Field, field_validator
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 from enum import Enum
 
@@ -22,7 +22,7 @@ class UserBase(BaseModel):
 
 # Create schema (registration)
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(min_length=8, max_length=128)
     role: UserRole = UserRole.CUSTOMER
 
 
@@ -31,6 +31,25 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
     preferences: Optional[Dict[str, Any]] = None
+
+
+class DietaryPreferencesUpdate(BaseModel):
+    dietary_restrictions: List[str] = Field(default_factory=list, max_length=20)
+    allergies: List[str] = Field(default_factory=list, max_length=20)
+    notes: Optional[str] = Field(default=None, max_length=1000)
+
+    @field_validator("dietary_restrictions", "allergies")
+    @classmethod
+    def clean_items(cls, values: List[str]) -> List[str]:
+        cleaned = []
+        for value in values:
+            item = value.strip()
+            if not item or item in cleaned:
+                continue
+            if len(item) > 80:
+                raise ValueError("Each dietary item must be 80 characters or fewer")
+            cleaned.append(item)
+        return cleaned
 
 
 # Response schema

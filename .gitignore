@@ -44,3 +44,28 @@ ENV/
 *.egg
 .mypy_cache/
 .pytest_cache/
+
+# AI tool artifacts
+.codex*/
+.claude/
+.gemini/
+
+# Thesis and research materials
+thesis/
+tmp/
+
+# Reference and design assets
+ui design/
+一些参考文档/
+download*.md
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Local helper notes
+start.md
+
+# Build output (already covered above but explicit)
+dist/

@@ -85,7 +85,7 @@ class CorporateEventUpdate(BaseModel):
 
 class CorporateEventResponse(CorporateEventBase):
     id: int
-    user_id: int
+    user_id: Optional[int]
     restaurant_id: Optional[int]
     confirmed_guests: int
     estimated_cost: Optional[float]

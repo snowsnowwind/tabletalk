@@ -1,0 +1,187 @@
+.dietary-page,
+.dietary-state {
+    min-height: calc(100vh - 80px);
+    background: var(--bg-black);
+    color: var(--text-primary);
+    padding: 48px 24px;
+}
+
+.dietary-state {
+    display: grid;
+    place-items: center;
+    color: var(--text-secondary);
+}
+
+.dietary-container {
+    width: min(900px, 100%);
+    margin: 0 auto;
+}
+
+.dietary-header {
+    margin-bottom: 28px;
+}
+
+.dietary-header h1,
+.dietary-login-card h1 {
+    margin: 6px 0 10px;
+    font-size: clamp(32px, 5vw, 48px);
+}
+
+.dietary-header p,
+.dietary-login-card p,
+.dietary-card > p {
+    color: var(--text-secondary);
+}
+
+.dietary-kicker {
+    color: var(--orange);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.dietary-card {
+    margin-bottom: 18px;
+    padding: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-xl);
+}
+
+.dietary-card h2 {
+    margin: 0 0 6px;
+}
+
+.dietary-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.dietary-choice {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-lg);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.dietary-choice:hover {
+    border-color: var(--orange);
+}
+
+.dietary-choice.selected {
+    border-color: var(--orange);
+    background: rgba(255, 139, 31, 0.16);
+    color: var(--orange);
+}
+
+.dietary-choice.selected.allergy {
+    border-color: #f97373;
+    background: rgba(249, 115, 115, 0.14);
+    color: #ff9a9a;
+}
+
+.dietary-warning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: var(--radius-lg);
+    background: rgba(249, 166, 35, 0.12);
+    color: #ffd08a;
+}
+
+.dietary-card label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.dietary-card textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    padding: 14px;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-lg);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font: inherit;
+}
+
+.dietary-card textarea:focus {
+    outline: none;
+    border-color: var(--orange);
+}
+
+.dietary-character-count {
+    display: block;
+    margin-top: 6px;
+    color: var(--text-tertiary);
+    text-align: right;
+    font-size: 13px;
+}
+
+.dietary-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dietary-success,
+.dietary-error {
+    margin: 16px 0;
+    padding: 12px 16px;
+    border-radius: var(--radius-lg);
+}
+
+.dietary-success {
+    background: rgba(34, 197, 94, 0.14);
+    color: #86efac;
+}
+
+.dietary-error {
+    background: rgba(239, 68, 68, 0.14);
+    color: #fca5a5;
+}
+
+.dietary-login-card {
+    width: min(520px, 100%);
+    margin: 80px auto;
+    padding: 42px;
+    text-align: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-xl);
+}
+
+.dietary-login-card > svg {
+    color: var(--orange);
+}
+
+.dietary-login-card .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+@media (max-width: 640px) {
+    .dietary-page {
+        padding: 28px 16px;
+    }
+
+    .dietary-card,
+    .dietary-login-card {
+        padding: 20px;
+    }
+}

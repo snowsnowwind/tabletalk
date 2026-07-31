@@ -1,4 +1,4 @@
-
+import getpass
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -14,14 +14,18 @@ def reset_password():
         if not user:
             print("User not found!")
             return
-        
-        new_password = "admin123"
+
+        new_password = getpass.getpass("New admin password: ")
+        confirmation = getpass.getpass("Repeat new admin password: ")
+        if new_password != confirmation:
+            raise ValueError("Password confirmation does not match.")
+        if len(new_password) < 8:
+            raise ValueError("Password must contain at least 8 characters.")
         hashed = get_password_hash(new_password)
-        print(f"Generated hash: {hashed}")
-        
+
         user.hashed_password = hashed
         db.commit()
-        print(f"✅ Password for {user.email} reset to: {new_password}")
+        print(f"Password for {user.email} was reset using bcrypt_sha256.")
     except Exception as e:
         print(f"Error: {e}")
     finally:

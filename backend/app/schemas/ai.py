@@ -2,7 +2,7 @@
 AI-related schemas
 """
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 
 
 # Restaurant recommendation request
@@ -91,12 +91,16 @@ class ChatRequest(BaseModel):
     message: str
     conversation_history: List[ChatMessage] = []
     context: Dict[str, Any] = {}  # Current booking state
+    provider: Literal["opencode_go", "deepseek"] = "opencode_go"
 
 
 class ChatResponse(BaseModel):
     response: str
-    action: Optional[str] = None  # e.g., "confirm_booking", "ask_date", "ask_guests"
+    action: Optional[str] = None  # booking actions plus cart_summary/remove_cart_item/clear_cart
     extracted_data: Dict[str, Any] = {}  # Extracted booking info
+    clear_fields: List[
+        Literal["date", "time", "guests", "name", "phone", "special_requests"]
+    ] = []
     quick_replies: List[str] = []
 
 

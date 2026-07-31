@@ -21,8 +21,8 @@ export default function StatusIndicator() {
     const checkStatus = async () => {
         const start = Date.now();
         try {
-            // Call a lightweight endpoint
-            const response = await fetch('http://localhost:8000/health');
+            // Call a lightweight endpoint - using 127.0.0.1 for better reliability
+            const response = await fetch('http://127.0.0.1:8570/health');
             const latency = Date.now() - start;
 
             if (response.ok) {
@@ -31,11 +31,12 @@ export default function StatusIndicator() {
                     const aiStatus = await apiService.getAIStatus();
                     setStatus({
                         backend: 'connected',
-                        database: 'connected', // Health check implies DB is okay usually
-                        ai: aiStatus.gemini_available ? 'connected' : 'disconnected',
+                        database: 'connected',
+                        ai: aiStatus.ai_configured ? 'configured' : 'disconnected',
                         latency
                     });
                 } catch (e) {
+                    console.warn("AI Status check failed:", e);
                     setStatus({
                         backend: 'connected',
                         database: 'connected',
@@ -44,9 +45,11 @@ export default function StatusIndicator() {
                     });
                 }
             } else {
+                console.error("Health check returned non-OK:", response.status);
                 throw new Error('Backend error');
             }
         } catch (error) {
+            console.error("System Status check failed:", error);
             setStatus({
                 backend: 'disconnected',
                 database: 'disconnected',
@@ -59,6 +62,7 @@ export default function StatusIndicator() {
     const getStatusColor = (s) => {
         switch (s) {
             case 'connected': return '#10b981'; // Green
+            case 'configured': return '#3b82f6'; // Blue
             case 'checking': return '#f59e0b'; // Orange
             case 'disconnected': return '#ef4444'; // Red
             default: return '#9ca3af'; // Gray
@@ -117,9 +121,9 @@ export default function StatusIndicator() {
                             <div className="status-icon">
                                 <Wifi size={16} color={getStatusColor(status.ai)} />
                             </div>
-                            <span className="status-name">Gemini AI</span>
+                            <span className="status-name">OpenCode Go</span>
                             <span className="status-value" style={{ color: getStatusColor(status.ai) }}>
-                                {status.ai === 'connected' ? 'READY' : status.ai.toUpperCase()}
+                                {status.ai === 'configured' ? 'CONFIGURED' : status.ai.toUpperCase()}
                             </span>
                         </div>
                     </div>

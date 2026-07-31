@@ -33,6 +33,7 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:5173",
+        "https://penological-literalistic-inger.ngrok-free.dev",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -51,8 +52,8 @@ app.include_router(ai_router)
 async def startup_event():
     """Initialize database on startup"""
     init_db()
-    print("✅ Database initialized")
-    print(f"📡 API docs available at http://localhost:{settings.port}/docs")
+    print("Database initialized")
+    print(f"API docs available at http://localhost:{settings.port}/docs")
 
 
 @app.get("/")

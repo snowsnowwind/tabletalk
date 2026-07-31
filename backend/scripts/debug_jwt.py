@@ -30,7 +30,7 @@ def debug_jwt():
     import requests
     try:
         # 1. Login
-        login_url = "http://localhost:8000/api/auth/login"
+        login_url = "http://localhost:8570/api/auth/login"
         login_payload = {"email": "admin@tabletalk.com", "password": "admin123"}
         print(f"\nLogging in to {login_url}...")
         resp = requests.post(login_url, json=login_payload)
@@ -39,7 +39,7 @@ def debug_jwt():
         if resp.status_code == 200:
             token = resp.json().get("access_token")
             # 2. Verify /me
-            me_url = "http://localhost:8000/api/auth/me"
+            me_url = "http://localhost:8570/api/auth/me"
             headers = {"Authorization": f"Bearer {token}"}
             print(f"Verifying token at {me_url}...")
             me_resp = requests.get(me_url, headers=headers)

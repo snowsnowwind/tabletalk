@@ -3,7 +3,7 @@ Corporate Event routes
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from ..database import get_db
 from ..models import CorporateEvent, EventFlow, User, EventStatus as EvStatus
@@ -11,7 +11,7 @@ from ..schemas import (
     CorporateEventCreate, CorporateEventUpdate, CorporateEventResponse, 
     CorporateEventWithFlow, EventFlowCreate, EventFlowResponse
 )
-from ..services.auth import get_current_user, require_corporate
+from ..services.auth import get_current_user, get_current_user_optional
 
 router = APIRouter(prefix="/api/events", tags=["Corporate Events"])
 
@@ -32,13 +32,13 @@ async def get_user_events(
 async def create_event(
     event_data: CorporateEventCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_corporate)
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
-    """Create a new corporate event"""
+    """Create a corporate event request for a signed-in user or guest."""
     event = CorporateEvent(
         **event_data.model_dump(),
-        user_id=current_user.id,
-        status=EvStatus.DRAFT
+        user_id=current_user.id if current_user else None,
+        status=EvStatus.PENDING_APPROVAL
     )
     
     db.add(event)

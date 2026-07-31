@@ -3,8 +3,9 @@
  * Connects to the FastAPI backend for all operations
  */
 
-// API Configuration - change this to your backend URL
-const API_BASE_URL = 'http://localhost:8000';
+// Use the configured public backend in production. During local/ngrok development,
+// same-origin /api requests are forwarded to FastAPI by Vite.
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || '';
 
 // Set to true to use mock data when backend is unavailable
 const USE_MOCK_DATA = false;
@@ -65,12 +66,6 @@ class ApiService {
             return await response.json();
         } catch (error) {
             console.error('API Request failed:', error);
-
-            // Fallback to mock data if backend is unavailable
-            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                console.log('Backend unavailable, using mock data');
-                this.useMock = true;
-            }
             throw error;
         }
     }
@@ -97,6 +92,13 @@ class ApiService {
 
     async getCurrentUser() {
         return this.request('/api/auth/me');
+    }
+
+    async updateDietaryPreferences(data) {
+        return this.request('/api/auth/me/dietary-preferences', {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
     }
 
     logout() {
@@ -143,7 +145,9 @@ class ApiService {
         });
     }
 
-    // ==================== RESERVATIONS ====================
+
+    // ==================== MOCK DATA HELPERS ====================
+
 
     async getMyReservations(status = null) {
         let endpoint = '/api/reservations';
@@ -154,7 +158,7 @@ class ApiService {
     }
 
     async createReservation(data) {
-        return this.request('/api/reservations', {
+        return await this.request('/api/reservations', {
             method: 'POST',
             body: JSON.stringify(data),
         });
@@ -267,7 +271,7 @@ class ApiService {
         });
     }
 
-    async chatWithAssistant(message, conversationHistory = [], context = {}) {
+    async chatWithAssistant(message, conversationHistory = [], context = {}, provider = 'opencode_go') {
         try {
             return await this.request('/api/ai/chat', {
                 method: 'POST',
@@ -275,15 +279,17 @@ class ApiService {
                     message,
                     conversation_history: conversationHistory,
                     context,
+                    provider,
                 }),
             });
         } catch (error) {
+            console.error("AI Error:", error);
             // Fallback response if AI is unavailable
             return {
-                response: '抱歉，AI助手暂时不可用。请使用传统表单进行预订。',
+                response: 'Sorry, the AI assistant is temporarily unavailable. Please use the booking form.',
                 action: null,
                 extracted_data: {},
-                quick_replies: ['使用表单预订'],
+                quick_replies: ['Use booking form'],
             };
         }
     }
