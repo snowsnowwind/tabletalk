@@ -1,0 +1,312 @@
+/* Private Events Page Styles */
+
+.private-events-page .page-header {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.private-events-page .page-badge {
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: var(--accent-300);
+}
+
+/* Spaces Section */
+.spaces-section {
+    margin-bottom: var(--space-10);
+}
+
+.spaces-section h3 {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-6);
+    text-align: center;
+}
+
+.spaces-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+    .spaces-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.space-card {
+    overflow: hidden;
+    padding: 0;
+}
+
+.space-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.space-info {
+    padding: var(--space-4);
+}
+
+.space-info h4 {
+    font-size: var(--text-base);
+    margin-bottom: var(--space-1);
+}
+
+.space-info p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+/* Inquiry Form */
+.inquiry-form {
+    padding: var(--space-8);
+    margin-bottom: var(--space-8);
+}
+
+.inquiry-form h3 {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    color: var(--accent-400);
+    margin-bottom: var(--space-8);
+    text-align: center;
+}
+
+.form-section {
+    margin-bottom: var(--space-6);
+}
+
+.section-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-4);
+}
+
+/* Event Type Grid */
+.event-type-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+}
+
+@media (min-width: 768px) {
+    .event-type-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+.event-type-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    transition: all var(--transition-base);
+}
+
+.event-type-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+.event-type-btn.active {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: var(--accent-400);
+    color: var(--accent-300);
+}
+
+.event-type-btn.active svg {
+    color: var(--accent-400);
+}
+
+/* Form Rows */
+.form-row {
+    display: grid;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.form-row.two-col {
+    grid-template-columns: 1fr;
+}
+
+.form-row.three-col {
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+    .form-row.two-col {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .form-row.three-col {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Menu Options */
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.menu-option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.menu-option:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.menu-option.active {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: var(--accent-400);
+}
+
+.menu-option input {
+    display: none;
+}
+
+.menu-option-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.menu-name {
+    font-weight: 500;
+}
+
+.menu-desc {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+/* Services Grid */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+}
+
+@media (min-width: 640px) {
+    .services-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+.service-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    color: var(--text-secondary);
+    font-size: var(--text-xs);
+    transition: all var(--transition-base);
+}
+
+.service-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.service-btn.active {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: var(--primary-400);
+    color: var(--primary-300);
+}
+
+/* Submit Button */
+.inquiry-form .submit-btn {
+    width: 100%;
+    margin-top: var(--space-6);
+}
+
+/* Contact CTA */
+.contact-cta {
+    text-align: center;
+    padding: var(--space-6);
+}
+
+.contact-cta h4 {
+    margin-bottom: var(--space-2);
+}
+
+.contact-cta p {
+    color: var(--text-secondary);
+}
+
+.contact-cta strong {
+    color: var(--accent-400);
+}
+
+/* Submission Card */
+.submission-card {
+    max-width: 500px;
+    margin: var(--space-12) auto;
+    padding: var(--space-8);
+    text-align: center;
+}
+
+.submission-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto var(--space-6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(16, 185, 129, 0.2);
+    border-radius: 50%;
+    color: var(--success);
+}
+
+.submission-card h2 {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-4);
+}
+
+.submission-card>p {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-6);
+}
+
+.submission-info {
+    padding: var(--space-4);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-6);
+}
+
+.submission-info p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-2);
+}
+
+.submission-info p:last-child {
+    margin-bottom: 0;
+}

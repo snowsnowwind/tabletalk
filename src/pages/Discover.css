@@ -1,0 +1,362 @@
+/* Discover Page - Figma Tinder-Style Design */
+
+.discover-page {
+    min-height: calc(100vh - 60px);
+    background: var(--bg-black);
+    padding: var(--space-6);
+    display: flex;
+    justify-content: center;
+}
+
+.discover-container {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Header */
+.discover-header {
+    text-align: center;
+    margin-bottom: var(--space-6);
+}
+
+.discover-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-2);
+}
+
+.discover-subtitle {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.discover-restaurant-selector {
+    width: 100%;
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-2);
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.discover-restaurant-option {
+    flex: 0 0 auto;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-full);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: var(--text-xs);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.discover-restaurant-option:hover,
+.discover-restaurant-option.active {
+    border-color: var(--orange);
+    background: rgba(245, 166, 35, 0.12);
+    color: var(--orange);
+}
+
+/* Card Stack */
+.card-stack {
+    position: relative;
+    width: 100%;
+    height: 520px;
+    margin-bottom: var(--space-6);
+}
+
+/* Stack Background Cards */
+.stack-card {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 100%;
+    background: var(--bg-card);
+    border-radius: var(--radius-2xl);
+    border: 1px solid var(--border-dark);
+}
+
+.stack-card-1 {
+    transform: translateX(-50%) scale(0.95) translateY(8px);
+    opacity: 0.6;
+    z-index: 1;
+}
+
+.stack-card-2 {
+    transform: translateX(-50%) scale(0.9) translateY(16px);
+    opacity: 0.3;
+    z-index: 0;
+}
+
+/* Restaurant Card */
+.restaurant-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-card);
+    border-radius: var(--radius-2xl);
+    border: 1px solid var(--border-dark);
+    overflow: hidden;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Card Image */
+.card-image-container {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg,
+            transparent 0%,
+            rgba(0, 0, 0, 0.6) 100%);
+}
+
+.menu-button {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.menu-button:hover {
+    background: var(--orange-hover);
+    transform: scale(1.05);
+}
+
+.rating-badge {
+    position: absolute;
+    bottom: var(--space-4);
+    right: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2);
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: var(--radius-full);
+    color: white;
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+
+/* Card Content */
+.card-content {
+    flex: 1;
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.restaurant-info {
+    flex: 0;
+}
+
+.restaurant-name {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
+}
+
+.restaurant-cuisine {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-3);
+}
+
+.restaurant-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+/* Discount Banner */
+.discount-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: rgba(245, 166, 35, 0.1);
+    border: 1px solid rgba(245, 166, 35, 0.3);
+    border-radius: var(--radius-lg);
+    color: var(--orange);
+    font-size: var(--text-sm);
+    font-weight: 500;
+}
+
+/* Time Slots */
+.time-slots-section {
+    flex: 1;
+}
+
+.time-slots-title {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-3);
+}
+
+.time-slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+/* Location */
+.location-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-dark);
+}
+
+.location-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.distance {
+    color: var(--text-tertiary);
+}
+
+.view-map-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--orange);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.view-map-btn:hover {
+    text-decoration: underline;
+}
+
+/* Swipe Actions */
+.swipe-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-10);
+    margin-bottom: var(--space-6);
+}
+
+.swipe-btn {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.swipe-btn-reject {
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 2px solid var(--border-dark);
+}
+
+.swipe-btn-reject:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: #ef4444;
+    transform: scale(1.1);
+}
+
+.swipe-btn-like {
+    background: var(--orange);
+    color: white;
+}
+
+.swipe-btn-like:hover {
+    background: var(--orange-hover);
+    transform: scale(1.1);
+    box-shadow: var(--shadow-orange);
+}
+
+/* Progress Dots */
+.progress-dots {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+}
+
+.progress-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--bg-input);
+    transition: all var(--transition-base);
+}
+
+.progress-dot.active {
+    width: 24px;
+    background: var(--orange);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .discover-page {
+        padding: var(--space-4);
+    }
+
+    .card-stack {
+        height: 480px;
+    }
+
+    .card-image-container {
+        height: 160px;
+    }
+}
+
+.discover-state {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-black);
+    color: var(--text-secondary);
+    font-size: var(--text-lg);
+}

@@ -1,0 +1,108 @@
+.register-page {
+    min-height: calc(100vh - 80px);
+    display: grid;
+    place-items: center;
+    padding: 40px 20px;
+    background: var(--bg-black);
+}
+
+.register-card {
+    width: min(560px, 100%);
+    padding: 36px;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-xl);
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.register-header {
+    margin-bottom: 26px;
+}
+
+.register-header > span {
+    color: var(--orange);
+    font-weight: 700;
+}
+
+.register-header h1 {
+    margin: 6px 0;
+    font-size: 36px;
+}
+
+.register-header p {
+    color: var(--text-secondary);
+}
+
+.register-form {
+    display: grid;
+    gap: 16px;
+}
+
+.register-form label {
+    display: grid;
+    gap: 7px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.register-input {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-lg);
+    background: var(--bg-input);
+}
+
+.register-input:focus-within {
+    border-color: var(--orange);
+}
+
+.register-input svg {
+    color: var(--text-tertiary);
+    flex: 0 0 auto;
+}
+
+.register-input input {
+    min-width: 0;
+    flex: 1;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text-primary);
+    font: inherit;
+}
+
+.register-input button,
+.register-login-link button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--orange);
+    cursor: pointer;
+}
+
+.register-submit {
+    margin-top: 8px;
+}
+
+.register-error {
+    padding: 12px 14px;
+    border-radius: var(--radius-lg);
+    background: rgba(239, 68, 68, 0.14);
+    color: #fca5a5;
+}
+
+.register-login-link {
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 600px) {
+    .register-card {
+        padding: 24px;
+    }
+}

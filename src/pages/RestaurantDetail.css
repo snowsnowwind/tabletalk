@@ -1,0 +1,394 @@
+/* Restaurant Detail Page - Figma Design */
+
+.restaurant-detail-page {
+    min-height: calc(100vh - 60px);
+    background: var(--bg-black);
+    padding: var(--space-6);
+    position: relative;
+}
+
+/* Back Button */
+.back-button {
+    position: absolute;
+    top: var(--space-6);
+    left: var(--space-6);
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-full);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    z-index: 10;
+}
+
+.back-button:hover {
+    background: var(--bg-card-hover);
+}
+
+/* Container - Two Column Layout */
+.detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+    padding-top: var(--space-12);
+}
+
+@media (min-width: 1024px) {
+    .detail-container {
+        grid-template-columns: 1fr 380px;
+        padding-top: 0;
+    }
+
+    .back-button {
+        position: fixed;
+    }
+}
+
+/* Left Column */
+.detail-left {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+/* Image Gallery */
+.image-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.gallery-main {
+    position: relative;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+}
+
+.gallery-main img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+
+@media (min-width: 768px) {
+    .gallery-main img {
+        height: 400px;
+    }
+}
+
+.gallery-actions {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    display: flex;
+    gap: var(--space-2);
+}
+
+.action-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: var(--radius-full);
+    color: white;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.action-btn:hover,
+.action-btn.active {
+    background: var(--orange);
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+}
+
+.gallery-item {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    transition: transform var(--transition-base);
+}
+
+.gallery-item img:hover {
+    transform: scale(1.05);
+}
+
+/* Restaurant Header */
+.restaurant-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.restaurant-name {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.restaurant-cuisine {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+}
+
+.restaurant-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.rating-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--orange);
+    font-weight: 600;
+}
+
+.price-level {
+    color: var(--text-secondary);
+}
+
+.restaurant-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+/* Tabs */
+.detail-tabs {
+    display: flex;
+    gap: var(--space-2);
+    border-bottom: 1px solid var(--border-dark);
+    padding-bottom: var(--space-2);
+}
+
+.tab-btn {
+    padding: var(--space-2) var(--space-4);
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    border-bottom: 2px solid transparent;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    color: var(--orange);
+    border-bottom-color: var(--orange);
+}
+
+/* Tab Content */
+.tab-content {
+    padding: var(--space-4) 0;
+}
+
+.description-content p {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: var(--space-6);
+}
+
+.info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+.info-item svg {
+    color: var(--orange);
+    flex-shrink: 0;
+}
+
+.features-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+}
+
+.features-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+.features-list li svg {
+    color: var(--orange);
+}
+
+/* Right Column - Booking Card */
+.detail-right {
+    position: sticky;
+    top: 80px;
+    height: fit-content;
+}
+
+.booking-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+}
+
+.booking-title {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-6);
+}
+
+.booking-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.form-label svg {
+    color: var(--orange);
+}
+
+/* Time Slots Grid */
+.time-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-2);
+}
+
+.time-slot-btn {
+    padding: var(--space-2);
+    background: var(--bg-input);
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    color: var(--text-secondary);
+    font-size: var(--text-xs);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.time-slot-btn:hover {
+    background: var(--bg-input-light);
+    color: var(--text-primary);
+}
+
+.time-slot-btn.active {
+    background: var(--orange);
+    color: white;
+}
+
+/* Guest Selector */
+.guest-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    background: var(--bg-input);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2);
+}
+
+.guest-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-input-light);
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--text-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.guest-btn:hover {
+    background: var(--orange);
+}
+
+.guest-count {
+    flex: 1;
+    text-align: center;
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Booking Button */
+.booking-btn {
+    width: 100%;
+    margin-top: var(--space-2);
+}
+
+.booking-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .restaurant-detail-page {
+        padding: var(--space-4);
+    }
+
+    .back-button {
+        top: var(--space-4);
+        left: var(--space-4);
+    }
+
+    .features-list {
+        grid-template-columns: 1fr;
+    }
+
+    .time-slots-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}

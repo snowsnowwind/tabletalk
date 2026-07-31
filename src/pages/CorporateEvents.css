@@ -1,0 +1,436 @@
+/* Corporate Events Page - Figma Step Wizard Design */
+
+.corporate-events-page {
+    min-height: calc(100vh - 60px);
+    background: var(--bg-black);
+    padding: var(--space-6);
+}
+
+.corporate-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+}
+
+@media (min-width: 900px) {
+    .corporate-container {
+        grid-template-columns: 280px 1fr;
+    }
+}
+
+/* Step Sidebar */
+.step-sidebar {
+    background: var(--bg-card);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    height: fit-content;
+    position: sticky;
+    top: calc(60px + var(--space-6));
+}
+
+.sidebar-title {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-6);
+}
+
+.step-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    position: relative;
+}
+
+.step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 40px;
+    width: 2px;
+    height: calc(100% - 8px);
+    background: var(--border-dark);
+}
+
+.step-item.completed:not(:last-child)::after {
+    background: var(--orange);
+}
+
+.step-indicator {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-input);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    font-weight: 600;
+    flex-shrink: 0;
+    transition: all var(--transition-base);
+}
+
+.step-item.active .step-indicator {
+    background: var(--orange);
+    color: white;
+}
+
+.step-item.completed .step-indicator {
+    background: var(--orange);
+    color: white;
+}
+
+.step-info {
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--space-2);
+}
+
+.step-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    transition: color var(--transition-base);
+}
+
+.step-item.active .step-label,
+.step-item.completed .step-label {
+    color: var(--text-primary);
+}
+
+.step-desc {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+}
+
+/* Main Step Content */
+.step-main {
+    background: var(--bg-card);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+}
+
+.step-content {
+    min-height: 400px;
+}
+
+.step-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-2);
+}
+
+.step-description {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-6);
+}
+
+/* Form Styles */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.form-label {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* Option Grid (Event Types) */
+.option-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
+}
+
+@media (min-width: 640px) {
+    .option-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.option-btn {
+    padding: var(--space-3);
+    background: var(--bg-input);
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.option-btn:hover {
+    background: var(--bg-input-light);
+    color: var(--text-primary);
+}
+
+.option-btn.active {
+    background: var(--orange);
+    color: white;
+}
+
+/* Guest Input */
+.guest-input {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    background: var(--bg-input);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2);
+}
+
+.guest-input button {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-input-light);
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--text-xl);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.guest-input button:hover {
+    background: var(--orange);
+}
+
+.guest-input span {
+    flex: 1;
+    text-align: center;
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Venue Grid */
+.venue-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+@media (max-width: 640px) {
+    .venue-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.venue-card {
+    background: var(--bg-input);
+    border: 2px solid transparent;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.venue-card:hover {
+    background: var(--bg-input-light);
+}
+
+.venue-card.active {
+    border-color: var(--orange);
+}
+
+.venue-image {
+    position: relative;
+    height: 120px;
+    overflow: hidden;
+}
+
+.venue-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.venue-selected {
+    position: absolute;
+    inset: 0;
+    background: rgba(245, 166, 35, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.venue-info {
+    padding: var(--space-3);
+}
+
+.venue-info h4 {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
+}
+
+.venue-info p {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+/* Menu Package Grid */
+.menu-package-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+}
+
+@media (min-width: 640px) {
+    .menu-package-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.menu-package-card {
+    position: relative;
+    padding: var(--space-4);
+    background: var(--bg-input);
+    border: 2px solid transparent;
+    border-radius: var(--radius-xl);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.menu-package-card:hover {
+    background: var(--bg-input-light);
+}
+
+.menu-package-card.active {
+    border-color: var(--orange);
+}
+
+.package-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-2);
+}
+
+.package-header h4 {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.package-price {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--orange);
+}
+
+.package-desc {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.package-check {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    color: var(--orange);
+}
+
+/* Review Card */
+.review-card {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+    padding: var(--space-6);
+    background: var(--bg-input);
+    border-radius: var(--radius-xl);
+}
+
+@media (max-width: 768px) {
+    .review-card {
+        grid-template-columns: 1fr;
+    }
+}
+
+.review-section h4 {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--orange);
+    margin-bottom: var(--space-2);
+}
+
+.review-section p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Navigation Buttons */
+.step-navigation {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-4);
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border-dark);
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .step-sidebar {
+        position: static;
+    }
+
+    .step-list {
+        flex-direction: row;
+        overflow-x: auto;
+        gap: var(--space-6);
+        padding-bottom: var(--space-2);
+    }
+
+    .step-item:not(:last-child)::after {
+        display: none;
+    }
+
+    .step-info {
+        display: none;
+    }
+}

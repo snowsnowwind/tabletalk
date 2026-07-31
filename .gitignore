@@ -1,0 +1,71 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Cache
+.cache/
+.parcel-cache/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+ENV/
+*.egg-info/
+.eggs/
+*.egg
+.mypy_cache/
+.pytest_cache/
+
+# AI tool artifacts
+.codex*/
+.claude/
+.gemini/
+
+# Thesis and research materials
+thesis/
+tmp/
+
+# Reference and design assets
+ui design/
+一些参考文档/
+download*.md
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Local helper notes
+start.md
+
+# Build output (already covered above but explicit)
+dist/
